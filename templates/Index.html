@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Villa SaaS</title>
+    <style>
+        body { font-family: Arial; background:#f5f5f5; }
+        .card {
+            background:white;
+            padding:15px;
+            margin:15px;
+            border-radius:10px;
+            box-shadow:0 0 10px rgba(0,0,0,0.1);
+        }
+        input, button {
+            padding:10px;
+            margin:5px;
+        }
+        button {
+            background:black;
+            color:white;
+            border:none;
+            border-radius:5px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2 style="text-align:center;">🏡 Villa SaaS System</h2>
+
+<!-- ADD VILLA -->
+<div class="card">
+    <h3>Add Villa</h3>
+    <input id="name" placeholder="Villa Name">
+    <input id="price" placeholder="Price">
+    <button onclick="addVilla()">Add</button>
+</div>
+
+<!-- SHOW VILLAS -->
+<h3 style="text-align:center;">Available Villas</h3>
+
+{% for v in villas %}
+<div class="card">
+    <h3>{{ v.name }}</h3>
+    <p>₹{{ v.price }}</p>
+</div>
+{% endfor %}
+
+<script>
+function addVilla(){
+    fetch('/add-villa',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+            name: document.getElementById('name').value,
+            price: document.getElementById('price').value
+        })
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        alert("Villa Added 🔥");
+        location.reload();
+    });
+}
+</script>
+
+</body>
+</html>
