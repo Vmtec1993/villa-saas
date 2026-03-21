@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Villa SaaS</title>
+<title>Villa SaaS</title>
 </head>
 <body>
 
@@ -30,8 +30,8 @@ function addVilla(){
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
-            name: document.getElementById('name').value,
-            price: document.getElementById('price').value
+            name: name.value,
+            price: price.value
         })
     })
     .then(res=>res.json())
