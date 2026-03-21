@@ -1,8 +1,5 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Login</title>
-</head>
 <body>
 
 <h2>Login</h2>
@@ -18,8 +15,8 @@ function login(){
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
-            email: document.getElementById('email').value,
-            password: document.getElementById('password').value
+            email: email.value,
+            password: password.value
         })
     })
     .then(res=>res.json())
