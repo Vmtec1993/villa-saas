@@ -2,22 +2,35 @@
 <html>
 <head>
 <title>Villa SaaS</title>
+<style>
+body { font-family: Arial; text-align:center; }
+.card {
+    border:1px solid #ddd;
+    margin:10px;
+    padding:10px;
+}
+</style>
 </head>
+
 <body>
 
-<h2>🏡 Villas</h2>
+<h1>🏡 Villa SaaS LIVE</h1>
 
 <a href="/login-page"><button>Login</button></a>
 
-<h3>Add Villa</h3>
-<input id="name" placeholder="Villa Name">
-<input id="price" placeholder="Price">
-<button onclick="addVilla()">Add</button>
+<h2>Add Villa</h2>
+
+<input id="name" placeholder="Villa Name"><br><br>
+<input id="price" placeholder="Price"><br><br>
+
+<button onclick="addVilla()">Add Villa</button>
 
 <hr>
 
+<h2>All Villas</h2>
+
 {% for v in villas %}
-<div>
+<div class="card">
     <h3>{{ v.name }}</h3>
     <p>₹{{ v.price }}</p>
     <button onclick="book('{{ v.name }}')">Book</button>
@@ -30,8 +43,8 @@ function addVilla(){
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
-            name: name.value,
-            price: price.value
+            name: document.getElementById('name').value,
+            price: document.getElementById('price').value
         })
     })
     .then(res=>res.json())
