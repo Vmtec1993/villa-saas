@@ -1,13 +1,10 @@
 from flask import Flask, request, jsonify, render_template, session, redirect
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-import jwt
-from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.secret_key = "secret123"
 
-# ================= DATABASE =================
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///saas.db'
 db = SQLAlchemy(app)
 
@@ -28,7 +25,7 @@ class Booking(db.Model):
     customer = db.Column(db.String(100))
     date = db.Column(db.String(50))
 
-# ================= INIT DB =================
+# ================= INIT =================
 with app.app_context():
     db.create_all()
 
@@ -57,31 +54,16 @@ def login():
     user = User.query.filter_by(email=data['email']).first()
 
     if user and check_password_hash(user.password, data['password']):
-        token = jwt.encode({
-            "user": user.id,
-            "exp": datetime.utcnow() + timedelta(days=1)
-        }, app.secret_key, algorithm="HS256")
-
-        return jsonify({"token": token})
-
+        session['user'] = user.id
+        return jsonify({"msg": "Login Success"})
+    
     return jsonify({"msg": "Invalid"})
-
-# ================= AUTH =================
-def auth(token):
-    try:
-        data = jwt.decode(token, app.secret_key, algorithms=["HS256"])
-        return data['user']
-    except:
-        return None
 
 # ================= ADD VILLA =================
 @app.route('/add-villa', methods=['POST'])
 def add_villa():
-    token = request.headers.get("Authorization")
-    user = auth(token)
-
-    if not user:
-        return jsonify({"msg": "Unauthorized"})
+    if not session.get('user'):
+        return jsonify({"msg": "Login Required"})
 
     data = request.json
 
@@ -114,6 +96,9 @@ def book():
 # ================= DASHBOARD =================
 @app.route('/dashboard')
 def dashboard():
+    if not session.get('user'):
+        return redirect('/')
+
     bookings = Booking.query.all()
     return jsonify([
         {
@@ -122,6 +107,11 @@ def dashboard():
             "date": b.date
         } for b in bookings
     ])
+
+# ================= LOGIN PAGE =================
+@app.route('/login-page')
+def login_page():
+    return render_template("login.html")
 
 # ================= RUN =================
 if __name__ == "__main__":
