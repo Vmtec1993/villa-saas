@@ -1,11 +1,19 @@
 from flask import Flask, request, jsonify, render_template, session, redirect
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+import os
 
-app = Flask(__name__)
+# ✅ IMPORTANT FIX
+app = Flask(__name__, template_folder="templates")
 app.secret_key = "secret123"
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///saas.db'
+# ✅ DATABASE (Render safe path)
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+db_path = os.path.join(BASE_DIR, "saas.db")
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_path
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
 
 # ================= MODELS =================
@@ -32,8 +40,11 @@ with app.app_context():
 # ================= HOME =================
 @app.route('/')
 def home():
-    villas = Villa.query.all()
-    return render_template("index.html", villas=villas)
+    try:
+        villas = Villa.query.all()
+        return render_template("index.html", villas=villas)
+    except Exception as e:
+        return f"Error: {str(e)}"
 
 # ================= REGISTER =================
 @app.route('/register', methods=['POST'])
@@ -69,7 +80,7 @@ def add_villa():
 
     villa = Villa(
         name=data['name'],
-        price=data['price']
+        price=int(data['price'])
     )
 
     db.session.add(villa)
@@ -97,7 +108,7 @@ def book():
 @app.route('/dashboard')
 def dashboard():
     if not session.get('user'):
-        return redirect('/')
+        return redirect('/login-page')
 
     bookings = Booking.query.all()
     return jsonify([
@@ -115,4 +126,4 @@ def login_page():
 
 # ================= RUN =================
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)
