@@ -53,20 +53,17 @@ def get_rows(target_sheet):
             padded_row = row + [''] * (len(headers) - len(row))
             item = dict(zip(headers, padded_row))
             
-            # --- Pricing Logic ---
+            # Pricing Logic
             try:
                 p = int(str(item.get('Price', '0')).replace(',', '').strip())
                 op = int(str(item.get('Original_Price', '0')).replace(',', '').strip())
                 item['Original_Price'] = op
-                
                 wd = int(str(item.get('Weekday_Price', '0')).replace(',', '').strip())
                 we = int(str(item.get('Weekend_Price', '0')).replace(',', '').strip())
-                
-                if today_day >= 4: # Fri-Sun
+                if today_day >= 4:
                     item['current_display_price'] = we if we > 0 else p
                 else:
                     item['current_display_price'] = wd if wd > 0 else p
-                
                 item['amount_saved'] = op - item['current_display_price'] if op > item['current_display_price'] else 0
             except:
                 item['current_display_price'] = 0
@@ -105,22 +102,35 @@ def villa_details(villa_id):
 def enquiry(villa_id):
     villas = get_rows(sheet)
     villa = next((v for v in villas if v.get('Villa_ID') == str(villa_id).strip()), None)
+    
+    # URL se aayi dates handle karne ke liye (Calendar logic)
+    prefilled_dates = request.args.get('dates', '')
+
     if request.method == 'POST':
         name, phone = request.form.get('name'), request.form.get('phone')
-        dates, guests = request.form.get('stay_dates', 'Not Selected'), request.form.get('guests', 'Not Specified')
+        dates, guests = request.form.get('stay_dates'), request.form.get('guests')
         v_name = villa.get('Villa_Name', 'Villa') if villa else "General Enquiry"
         
+        # 1. Sheet mein save karein
         if enquiry_sheet:
             enquiry_sheet.append_row([datetime.now().strftime("%d-%m-%Y %H:%M"), name, phone, dates, guests, v_name])
         
+        # 2. Telegram Alert
         alert = f"🚀 *New Lead!*\n🏡 *Villa:* {v_name}\n👤 *Name:* {name}\n📞 *Phone:* {phone}\n📅 *Dates:* {dates}"
         requests.get(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", params={"chat_id": TELEGRAM_CHAT_ID, "text": alert, "parse_mode": "Markdown"})
         
-        msg = f"Hi MoreVistas, I want to book {v_name} for {guests} guests. My name is {name}."
-        return redirect(f"https://wa.me/{WHATSAPP_NUMBER}?text={requests.utils.quote(msg)}")
-    return render_template('enquiry.html', villa=villa)
+        # 3. Success Page par redirect karein (Wahan se auto WhatsApp hoga)
+        return redirect(url_for('booking_success', name=name, villa_name=v_name))
+        
+    return render_template('enquiry.html', villa=villa, prefilled_dates=prefilled_dates)
 
-# --- 🔐 ADMIN SECTION (Add-ons) ---
+@app.route('/booking-success')
+def booking_success():
+    name = request.args.get('name', 'Guest')
+    villa_name = request.args.get('villa_name', 'Villa')
+    return render_template('success.html', name=name, villa_name=villa_name)
+
+# --- 🔐 ADMIN SECTION (Baki logic same hai) ---
 
 @app.route('/admin-action/<target>/<action>/<id>')
 def admin_action(target, action, id):
@@ -164,7 +174,6 @@ def admin_dashboard():
     villas = get_rows(sheet)
     places = get_rows(places_sheet)
     enqs = get_rows(enquiry_sheet)[-20:][::-1]
-    
     settings = {}
     if settings_sheet:
         settings = {'Banner_URL': settings_sheet.acell('B1').value, 'Offer_Text': settings_sheet.acell('B2').value, 'Banner_Show': settings_sheet.acell('B3').value}
@@ -184,4 +193,4 @@ def contact(): return render_template('contact.html')
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
-    
+            
