@@ -1,57 +1,36 @@
 {% extends 'base.html' %}
 {% block content %}
 
-{# --- CSS SECTION (Messi Look Fix + Professional Alignment) --- #}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
-    /* Premium Typography */
+    /* Premium Design Fixes */
     .villa-title-detail {
         background: linear-gradient(135deg, #1a1a1a 0%, #e0b15c 50%, #1a1a1a 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         font-weight: 850; font-size: 2.5rem;
-        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
     }
     .carousel-item img { height: 500px; object-fit: cover; border-radius: 25px; }
-    @media (max-width: 768px) { .carousel-item img { height: 280px; } .villa-title-detail { font-size: 1.8rem; } }
-
-    /* ✅ AMENITIES & RULES CLEAN ALIGNMENT (No More Messi) */
-    .amenity-detail-item {
-        background: #ffffff; border: 1px solid #f0f0f0; padding: 15px; border-radius: 15px;
-        display: flex; flex-direction: column; align-items: center; text-align: center;
-        height: 100%; transition: 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-    }
-    .amenity-icon-box { font-size: 1.8rem; color: #0d6efd; }
-
-    .modern-rule-item {
-        display: flex;
-        align-items: flex-start; /* ✅ Fixed: Icon top par rahega, text wrap hoga */
-        background: #fdfdfd; padding: 18px; border-radius: 15px;
-        margin-bottom: 12px; border: 1px solid #f1f4f8; transition: 0.3s ease;
-    }
-    .rule-icon-box {
-        width: 35px; height: 35px; flex-shrink: 0; /* ✅ Fixed: Icon pichkega nahi */
-        background: rgba(13, 110, 253, 0.08); color: #0d6efd;
-        border-radius: 8px; display: flex; align-items: center; justify-content: center;
-        margin-right: 15px;
-    }
-    .rule-text-content { font-size: 0.95rem; line-height: 1.6; color: #333; font-weight: 600; }
     
-    .offer-banner { position: absolute; top: 25px; left: 25px; z-index: 10; background: #ffc107; color: #000; padding: 6px 18px; border-radius: 50px; font-weight: 800; font-size: 0.8rem; }
+    /* Calendar Styling (Sold vs Available) */
+    .flatpickr-calendar { box-shadow: none !important; border: 1px solid #eee !important; width: 100% !important; }
+    .flatpickr-day.flatpickr-disabled { background: #ff4757 !important; color: white !important; opacity: 1; border-radius: 50%; }
+    .flatpickr-day:not(.flatpickr-disabled) { background: #2ed573 !important; color: white !important; border-radius: 50%; border: 2px solid white; }
+    
+    .modern-rule-item { display: flex; align-items: flex-start; gap: 15px; background: #fdfdfd; padding: 18px; border-radius: 15px; margin-bottom: 12px; border: 1px solid #f1f4f8; }
+    .rule-icon-box { flex-shrink: 0; color: #0d6efd; font-size: 1.2rem; }
+    
+    @media (max-width: 768px) { .carousel-item img { height: 280px; } }
 </style>
 
 <div class="container py-4">
-    {# --- IMAGE SLIDER --- #}
+    {# --- Image Slider --- #}
     <div id="villaSlider" class="carousel slide shadow-lg mb-5" data-bs-ride="carousel" style="border-radius: 25px; overflow: hidden;">
-        <div class="offer-banner">🔥 VERIFIED BY MOREVISTAS</div>
         <div class="carousel-inner">
             <div class="carousel-item active"><img src="{{ villa.Image_URL }}" class="d-block w-100"></div>
             {% for img in villa_images %}{% if img != villa.Image_URL %}
                 <div class="carousel-item"><img src="{{ img }}" class="d-block w-100"></div>
             {% endif %}{% endfor %}
         </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#villaSlider" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
-        <button class="carousel-control-next" type="button" data-bs-target="#villaSlider" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
     </div>
 
     <div class="row g-5">
@@ -59,30 +38,22 @@
             <h1 class="villa-title-detail mb-1">{{ villa.Villa_Name }}</h1>
             <p class="text-muted mb-5 fw-bold"><i class="bi bi-geo-alt-fill text-danger me-2"></i>Lonavala, Maharashtra</p>
 
-            {# --- HIGHLIGHTS --- #}
+            {# --- Highlights --- #}
             <div class="row g-3 mb-5 text-center">
-                <div class="col-4"><div class="highlight-badge-card p-3 border rounded-4 shadow-sm"><i class="bi bi-people fs-2 text-primary"></i><div class="fw-bold mt-2">{{ villa.Guests }} Guests</div></div></div>
-                <div class="col-4"><div class="highlight-badge-card p-3 border rounded-4 shadow-sm"><i class="bi bi-door-open fs-2 text-primary"></i><div class="fw-bold mt-2">{{ villa.BHK }} BHK</div></div></div>
-                <div class="col-4"><div class="highlight-badge-card p-3 border rounded-4 shadow-sm"><i class="bi bi-water fs-2 text-primary"></i><div class="fw-bold mt-2">Private Pool</div></div></div>
+                <div class="col-4"><div class="p-3 border rounded-4"><i class="bi bi-people fs-2 text-primary"></i><div class="fw-bold mt-2">{{ villa.Guests }} Guests</div></div></div>
+                <div class="col-4"><div class="p-3 border rounded-4"><i class="bi bi-door-open fs-2 text-primary"></i><div class="fw-bold mt-2">{{ villa.BHK }} BHK</div></div></div>
+                <div class="col-4"><div class="p-3 border rounded-4"><i class="bi bi-water fs-2 text-primary"></i><div class="fw-bold mt-2">Private Pool</div></div></div>
             </div>
 
-            {# --- AMENITIES --- #}
+            {# --- Amenities --- #}
             <div class="mb-5">
                 <h4 class="fw-bold mb-4">What this villa offers</h4>
                 <div class="row g-3">
                     {% if villa.Amenities %}
                         {% for amen in villa.Amenities.split('|') %}
-                        {% set item = amen.strip()|lower %}
                         <div class="col-4 col-md-3">
-                            <div class="amenity-detail-item">
-                                <div class="amenity-icon-box">
-                                    {% if 'pool' in item %}<i class="bi bi-water"></i>
-                                    {% elif 'wifi' in item %}<i class="bi bi-wifi"></i>
-                                    {% elif 'ac' in item %}<i class="bi bi-snow"></i>
-                                    {% elif 'tv' in item %}<i class="bi bi-tv"></i>
-                                    {% elif 'parking' in item %}<i class="bi bi-p-circle"></i>
-                                    {% else %}<i class="bi bi-check-circle"></i>{% endif %}
-                                </div>
+                            <div class="p-3 border rounded-4 text-center">
+                                <i class="bi bi-check-circle text-primary fs-4 d-block mb-1"></i>
                                 <span class="small fw-bold">{{ amen.strip() }}</span>
                             </div>
                         </div>
@@ -91,47 +62,58 @@
                 </div>
             </div>
 
-            {# --- RULES SECTION (FIXED LIST) --- #}
+            {# --- Guidelines --- #}
             <div class="mb-5">
-                <h4 class="fw-bold mb-4">Guest Guidelines</h4>
-                <div class="premium-rules-container">
-                    {% if villa.Rules_List %}
-                        {% for rule in villa.Rules_List %}
-                        <div class="modern-rule-item">
-                            <div class="rule-icon-box"><i class="bi bi-shield-check"></i></div>
-                            <div class="rule-text-content">{{ rule }}</div>
-                        </div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
+                <h4 class="fw-bold mb-4">Stay Guidelines</h4>
+                {% if villa.Rules_List %}
+                    {% for rule in villa.Rules_List %}
+                    <div class="modern-rule-item">
+                        <div class="rule-icon-box"><i class="bi bi-shield-check"></i></div>
+                        <div class="rule-text-content fw-bold text-dark">{{ rule }}</div>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            {# --- Enquiry Form Section (Target for Scroll) --- #}
+            <div id="enquiry-form-section" class="mt-5 p-4 bg-white border rounded-5 shadow-sm">
+                <h4 class="fw-bold mb-4 text-center">Submit Enquiry to Book</h4>
+                <form action="/enquiry/{{ villa.Villa_ID }}" method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6"><input type="text" name="name" class="form-control py-3 rounded-pill" placeholder="Your Name" required></div>
+                        <div class="col-md-6"><input type="tel" name="phone" class="form-control py-3 rounded-pill" placeholder="Phone Number" required></div>
+                        <div class="col-md-12"><button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold">PROCEED TO BOOKING</button></div>
+                    </div>
+                </form>
             </div>
         </div>
 
+        {# --- Sidebar: Pricing & Calendar --- #}
         <div class="col-lg-4">
             <div class="card border-0 shadow-lg rounded-4 p-4 sticky-top" style="top: 100px;">
-                <h5 class="fw-bold mb-4">Pricing & Booking</h5>
+                <h5 class="fw-bold mb-3">Check Availability</h5>
+                <div class="mb-3">
+                    <span class="display-6 fw-bold text-dark">₹{{ villa.current_display_price|int }}</span>
+                    <span class="text-muted fw-bold">/ night</span>
+                </div>
+
+                {# ✅ Calendar moved UP for better clarity #}
                 <div class="mb-4">
-                    {% if villa.current_display_price|int > 0 %}
-                        <div class="d-flex align-items-baseline">
-                            <span class="display-5 fw-bold text-dark">₹{{ villa.current_display_price|int }}</span>
-                            <span class="text-muted ms-2 fw-bold">/ night</span>
-                        </div>
-                    {% else %}
-                        <span class="fs-3 fw-bold text-primary">Price on Request</span>
-                    {% endif %}
+                    <div id="availability-calendar"></div>
+                    <div class="d-flex justify-content-between mt-2 px-1">
+                        <small class="fw-bold text-danger"><i class="bi bi-circle-fill"></i> Sold</small>
+                        <small class="fw-bold text-success"><i class="bi bi-circle-fill"></i> Free</small>
+                    </div>
                 </div>
 
                 <div class="d-grid gap-3">
-                    {# ✅ FIXED: WhatsApp Redirect Number 8830024994 #}
-                    <a href="https://wa.me/918830024994?text=Hi%20MoreVistas,%20I%20am%20interested%20in%20booking%20{{ villa.Villa_Name|urlencode }}" class="btn btn-success rounded-pill py-3 fw-bold">
+                    {# ✅ WhatsApp Button now scrolls to form first #}
+                    <button onclick="scrollToForm()" class="btn btn-success rounded-pill py-3 fw-bold shadow-sm">
                         <i class="bi bi-whatsapp me-2"></i>BOOK ON WHATSAPP
-                    </a>
-                    <a href="/enquiry/{{ villa.Villa_ID }}" class="btn btn-outline-primary rounded-pill py-3 fw-bold">ENQUIRY FORM</a>
-                    <button class="btn btn-dark rounded-pill py-2 small fw-bold" id="btnCheckAvail">VIEW CALENDAR</button>
-                </div>
-                
-                <div id="calendar-container" style="display:none;" class="mt-4">
-                    <div id="availability-calendar" class="mx-auto"></div>
+                    </button>
+                    <button onclick="scrollToForm()" class="btn btn-outline-primary rounded-pill py-3 fw-bold">
+                        <i class="bi bi-pencil-square me-2"></i>FILL ENQUIRY FORM
+                    </button>
                 </div>
             </div>
         </div>
@@ -140,14 +122,20 @@
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-    document.getElementById('btnCheckAvail').addEventListener('click', function() {
-        var container = document.getElementById('calendar-container');
-        container.style.display = container.style.display === 'none' ? 'block' : 'none';
-        if (container.style.display === 'block') {
-            flatpickr("#availability-calendar", {
-                inline: true, minDate: "today",
-                disable: [{% if villa.Sold_Dates %}{% for d in villa.Sold_Dates.split(',') %}"{{ d.strip() }}",{% endfor %}{% endif %}]
-            });
+    function scrollToForm() {
+        document.getElementById('enquiry-form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    flatpickr("#availability-calendar", {
+        inline: true,
+        minDate: "today",
+        disable: [
+            {% if villa.Sold_Dates %}
+                {% for d in villa.Sold_Dates.split(',') %} "{{ d.strip() }}", {% endfor %}
+            {% endif %}
+        ],
+        onChange: function(selectedDates, dateStr, instance) {
+            scrollToForm(); // Date select karte hi form par le jaye
         }
     });
 </script>
