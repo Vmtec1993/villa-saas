@@ -37,7 +37,7 @@ def init_sheets():
             places_sheet = main_spreadsheet.worksheet("Places")
             enquiry_sheet = main_spreadsheet.worksheet("Enquiries")
             settings_sheet = main_spreadsheet.worksheet("Settings")
-            print("✅ Sheets Connected")
+            print("✅ MoreVistas Business Engine Connected")
         except Exception as e: print(f"❌ Error: {e}")
 
 init_sheets()
@@ -54,7 +54,7 @@ def get_rows(target_sheet):
             padded_row = row + [''] * (len(headers) - len(row))
             item = dict(zip(headers, padded_row))
             
-            # --- Pricing & Savings Logic (Fixes Jinja2 Error) ---
+            # --- 💰 PRICING & SAVINGS LOGIC (Fixed for Templates) ---
             try:
                 v_price = str(item.get('Price', '0')).replace(',', '').strip()
                 vendor_base = int(float(v_price)) if v_price and v_price.lower() != 'nan' else 0
@@ -65,7 +65,7 @@ def get_rows(target_sheet):
                 else:
                     item['current_display_price'] = vendor_base
                 
-                # amount_saved calculation (Prevents index.html crash)
+                # amount_saved logic to prevent crash
                 op = str(item.get('Original_Price', '0')).replace(',', '').strip()
                 orig_p = int(float(op)) if op and op.lower() != 'nan' else 0
                 item['Original_Price'] = orig_p
@@ -77,12 +77,16 @@ def get_rows(target_sheet):
                 item['amount_saved'] = 0
                 item['is_on_request'] = True
 
+            # Rules Logic (Split logic for messy lists)
+            raw_rules = str(item.get('Rules', '')).strip()
+            item['Rules_List'] = [r.strip() for r in (raw_rules.split('|') if '|' in raw_rules else raw_rules.split('\n')) if r.strip()]
+            
             item['Villa_ID'] = str(item.get('Villa_ID', '')).strip()
             final_list.append(item)
         return final_list
     except: return []
 
-# --- 🚀 PUBLIC ROUTES ---
+# --- 🚀 PUBLIC ROUTES (Fixes 404 Errors) ---
 
 @app.route('/')
 def index():
@@ -97,8 +101,7 @@ def index():
 
 @app.route('/explore')
 def explore():
-    places = get_rows(places_sheet)
-    return render_template('explore.html', tourist_places=places)
+    return render_template('explore.html', tourist_places=get_rows(places_sheet))
 
 @app.route('/list-property')
 def list_property():
@@ -120,8 +123,7 @@ def villa_details(villa_id):
     # Gallery Fix
     imgs = [villa.get('Image_URL')]
     for i in range(2, 12):
-        img_val = villa.get(f'Image_URL_{i}')
-        if img_val: imgs.append(img_val)
+        if villa.get(f'Image_URL_{i}'): imgs.append(villa.get(f'Image_URL_{i}'))
     return render_template('villa_details.html', villa=villa, villa_images=imgs)
 
 @app.route('/enquiry/<villa_id>', methods=['GET', 'POST'])
@@ -153,7 +155,7 @@ def admin_login():
 def admin_dashboard():
     if not session.get('logged_in'): return redirect(url_for('admin_login'))
     villas = get_rows(sheet)
-    return render_template('admin_dashboard.html', villas=villas, enquiries=get_rows(enquiry_sheet)[-10:][::-1])
+    return render_template('admin_dashboard.html', villas=villas, enquiries=get_rows(enquiry_sheet)[-20:][::-1])
 
 @app.route('/admin-logout')
 def admin_logout():
