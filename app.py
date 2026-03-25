@@ -53,13 +53,12 @@ def get_rows(target_sheet):
             padded_row = row + [''] * (len(headers) - len(row))
             item = dict(zip(headers, padded_row))
             
-            # --- 💰 Pricing & amount_saved Fix (CRITICAL) ---
+            # --- 💰 Pricing & amount_saved Fix ---
             try:
                 p = int(str(item.get('Price', '0')).replace(',', '').strip())
                 op = int(str(item.get('Original_Price', '0')).replace(',', '').strip())
                 item['Original_Price'] = op
                 
-                # Dynamic Price Logic
                 wd = int(str(item.get('Weekday_Price', '0')).replace(',', '').strip())
                 we = int(str(item.get('Weekend_Price', '0')).replace(',', '').strip())
                 
@@ -68,13 +67,11 @@ def get_rows(target_sheet):
                 else:
                     item['current_display_price'] = wd if wd > 0 else p
                 
-                # Variable used in index.html and villa_details.html
                 item['amount_saved'] = op - item['current_display_price'] if op > item['current_display_price'] else 0
             except:
                 item['current_display_price'] = 0
                 item['amount_saved'] = 0
 
-            # Rules Logic
             raw_rules = str(item.get('Rules', '')).strip()
             item['Rules_List'] = [r.strip() for r in (raw_rules.split('|') if '|' in raw_rules else raw_rules.split('\n')) if r.strip()]
             item['Villa_ID'] = str(item.get('Villa_ID', '')).strip()
@@ -82,7 +79,7 @@ def get_rows(target_sheet):
         return final_list
     except: return []
 
-# --- 🚀 Public Routes (Fixing 404s) ---
+# --- 🚀 Routes ---
 
 @app.route('/')
 def index():
@@ -133,12 +130,9 @@ def enquiry(villa_id):
         alert = f"🚀 *New Lead!*\n🏡 *Villa:* {v_name}\n👤 *Name:* {name}\n📞 *Phone:* {phone}\n📅 *Dates:* {dates}"
         requests.get(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", params={"chat_id": TELEGRAM_CHAT_ID, "text": alert, "parse_mode": "Markdown"})
         
-        # WhatsApp Redirection Logic
         msg = f"Hi MoreVistas, I want to book {v_name} for {guests} guests on {dates}. My name is {name}."
         return redirect(f"https://wa.me/{WHATSAPP_NUMBER}?text={requests.utils.quote(msg)}")
     return render_template('enquiry.html', villa=villa)
-
-# --- Admin Section ---
 
 @app.route('/admin-login', methods=['GET', 'POST'])
 def admin_login():
