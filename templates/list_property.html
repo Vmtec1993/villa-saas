@@ -1,38 +1,76 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<div class="container py-5 mt-5">
+<style>
+    .partner-hero { background: #f8f9fa; padding: 100px 0 60px; border-radius: 0 0 50px 50px; }
+    .step-card { background: white; border-radius: 25px; padding: 30px; border: 1px solid #eee; transition: 0.3s; height: 100%; }
+    .step-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.05); }
+    .step-number { width: 40px; height: 40px; background: #0d6efd; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; margin-bottom: 20px; }
+    
+    .onboarding-form { background: white; border-radius: 35px; padding: 45px; box-shadow: 0 25px 70px rgba(0,0,0,0.07); border: 1px solid #f0f0f0; margin-top: -50px; position: relative; z-index: 10; }
+    .form-input-pro { border-radius: 15px; padding: 15px 20px; border: 2px solid #f1f4f8; font-weight: 600; transition: 0.3s; }
+    .form-input-pro:focus { border-color: #0d6efd; box-shadow: none; }
+</style>
+
+<div class="partner-hero text-center">
+    <div class="container">
+        <span class="badge bg-primary rounded-pill px-4 py-2 mb-3 fw-800">PARTNER PROGRAM 2026</span>
+        <h1 class="display-4 fw-900 brand-hologram">Grow Your Villa <span class="text-primary">Business</span></h1>
+        <p class="lead text-muted fw-bold">Lonavala ke sabse elite network ka hissa banein.</p>
+    </div>
+</div>
+
+<div class="container pb-5">
     <div class="row justify-content-center">
-        <div class="col-md-8 text-center">
-            <h1 class="fw-bold mb-4">Partner With <span class="text-primary">MoreVistas</span></h1>
-            <p class="lead text-muted mb-5">Lonavala ke sabse luxury villa network ka hissa banein. Apni property ko hamare saath list karein aur behatrin bookings payein.</p>
-            
-            <div class="card border-0 shadow-lg rounded-5 overflow-hidden mb-5">
-                <div class="row g-0">
-                    <div class="col-md-5">
-                        <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800" class="img-fluid h-100" style="object-fit: cover;" alt="Luxury Villa">
-                    </div>
-                    <div class="col-md-7 p-5 text-start">
-                        <h3 class="fw-bold mb-3">Kyun Hamare Saath Judein?</h3>
-                        <ul class="list-unstyled">
-                            <li class="mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i> High-Quality Verified Guests</li>
-                            <li class="mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i> Professional Photography & Marketing</li>
-                            <li class="mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i> 24/7 Owner Support</li>
-                            <li class="mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i> Flexible Pricing Control</li>
-                        </ul>
-                        
-                        <div class="mt-4">
-                            <p class="fw-bold mb-2">Humein WhatsApp par Details Bhejein:</p>
-                            <a href="https://wa.me/919762202897?text=Hi, I want to list my villa with MoreVistas." class="btn btn-success btn-lg rounded-pill px-4 shadow">
-                                <i class="bi bi-whatsapp me-2"></i> Chat with Us
-                            </a>
+        <div class="col-lg-8">
+            <div class="onboarding-form animate-up">
+                <h3 class="fw-900 mb-4 text-center">Partner Registration</h3>
+                <form action="/partner-request" method="POST">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="small fw-800 text-muted ms-2 mb-1">Owner Name</label>
+                            <input type="text" name="owner" class="form-control form-input-pro" placeholder="Enter full name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small fw-800 text-muted ms-2 mb-1">WhatsApp Number</label>
+                            <input type="tel" name="phone" class="form-control form-input-pro" placeholder="+91 00000 00000" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="small fw-800 text-muted ms-2 mb-1">Villa Location / Name</label>
+                            <input type="text" name="loc" class="form-control form-input-pro" placeholder="e.g. 4BHK Villa, Tungarli" required>
+                        </div>
+                        <div class="col-md-12 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill py-3 fw-900 shadow-lg">
+                                SUBMIT & CHAT ON WHATSAPP <i class="bi bi-whatsapp ms-2"></i>
+                            </button>
                         </div>
                     </div>
-                </div>
+                </form>
+                <p class="text-center mt-4 small text-muted">Aap humein call bhi kar sakte hain: <b>+91 88300 24994</b></p>
             </div>
+        </div>
+    </div>
 
-            <div class="bg-light p-4 rounded-4">
-                <p class="mb-0 small text-muted italic">Aap humein call bhi kar sakte hain: <strong>+91 97622 02897</strong></p>
+    <div class="row g-4 mt-5 pt-5 text-center">
+        <div class="col-md-4">
+            <div class="step-card">
+                <div class="step-number mx-auto">1</div>
+                <h5 class="fw-900">Verified Guests</h5>
+                <p class="small text-muted mb-0">Hum sirf ID-verified aur quality guests ko hi aapki property bhejte hain.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="step-card">
+                <div class="step-number mx-auto">2</div>
+                <h5 class="fw-900">Expert Marketing</h5>
+                <p class="small text-muted mb-0">Professional photography aur SEO ke saath aapki villa Google par top par rahegi.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="step-card">
+                <div class="step-number mx-auto">3</div>
+                <h5 class="fw-900">Dynamic Pricing</h5>
+                <p class="small text-muted mb-0">Weekend aur peak seasons mein maximum profit ke liye advanced pricing control.</p>
             </div>
         </div>
     </div>
