@@ -5,15 +5,12 @@
 <div class="container-fluid p-0 mb-4">
     <div class="position-relative shadow-lg overflow-hidden">
         <img src="{{ settings.get('Banner_URL', 'https://i.postimg.cc/25hdTQF9/retouch-2026022511311072.jpg') }}" 
-             class="w-100 d-block holi-banner-img" 
-             alt="Luxury Offer">
-             
+             class="w-100 d-block holi-banner-img" alt="Luxury Offer">
         <div class="position-absolute top-0 end-0 m-3">
             <span class="badge bg-danger rounded-pill px-3 py-2 shadow-sm animate-pulse">
                 {{ settings.get('Offer_Text', '🎨 HOLI OFFER LIVE') }}
             </span>
         </div>
-        
         <div class="position-absolute bottom-0 start-0 w-100 p-3 text-center" style="background: linear-gradient(transparent, rgba(0,0,0,0.6));">
             <a href="#villaContainer" class="btn btn-light btn-lg rounded-pill fw-bold px-5 shadow-lg border-0 text-danger">BOOK NOW 🚀</a>
         </div>
@@ -22,10 +19,20 @@
 {% endif %}
 
 <div class="container mb-4">
-    <div class="bg-white p-3 rounded-4 shadow-sm border d-flex align-items-center justify-content-center">
-        <div id="weather-icon" class="me-2 fs-3">☁️</div>
-        <div class="fw-bold fs-5 text-dark">Lonavala: <span id="temp">--</span>°C</div>
-        <div id="weather-desc" class="ms-3 text-muted small text-capitalize d-none d-md-block">Loading...</div>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="bg-white p-3 rounded-4 shadow-sm border d-flex align-items-center justify-content-center h-100">
+                <div id="weather-icon" class="me-2 fs-3">☁️</div>
+                <div class="fw-bold fs-5 text-dark">Lonavala: <span id="temp">--</span>°C</div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="bg-primary text-white p-3 rounded-4 shadow-sm d-flex align-items-center justify-content-around h-100">
+                <div class="small fw-bold"><i class="bi bi-shield-check me-1"></i> 100% Verified Stays</div>
+                <div class="small fw-bold"><i class="bi bi-chat-heart me-1"></i> 24/7 Local Support</div>
+                <div class="small fw-bold"><i class="bi bi-currency-rupee me-1"></i> Best Price Guarantee</div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -37,20 +44,14 @@
     .price-cut { text-decoration: line-through; color: #6c757d; font-size: 0.9rem; margin-right: 8px; }
     .off-tag { background: #28a745; color: white; font-size: 0.75rem; padding: 2px 10px; border-radius: 5px; font-weight: bold; }
     .sold-out-overlay { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.7); color: white; padding: 5px 15px; border-radius: 50px; font-size: 0.75rem; font-weight: bold; z-index: 5; border: 1px solid rgba(255,255,255,0.3); }
-    
     .amenity-tag { background: #f1f3f5; color: #495057; font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; margin-right: 4px; display: inline-block; border: 1px solid #dee2e6; }
-
-    .villa-desc-text {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 0.85rem; color: #555; line-height: 1.5;
-        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-        overflow: hidden; font-style: italic;
-    }
+    .benefit-card { border-radius: 20px; border: 1px solid #eee; padding: 20px; transition: 0.3s; }
+    .benefit-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
 </style>
 
-<div class="container mt-4 text-center">
-    <h1 class="fw-bold display-6">Experience <span class="text-primary">Private Pool Luxury</span></h1>
-    <p class="text-muted">Perfect for Parties • Family Trips • Birthday Celebrations</p>
+<div class="container mt-5 text-center">
+    <h1 class="fw-bold display-6">Premium <span class="text-primary">Lonavala Getaways</span></h1>
+    <p class="text-muted mx-auto" style="max-width: 600px;">Experience the perfect blend of nature and luxury. Our handpicked villas offer complete privacy and top-notch amenities for your group.</p>
 </div>
 
 <div class="container mt-5">
@@ -59,22 +60,15 @@
             {% for villa in villas %}
             <div class="col-md-4">
                 <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative">
-                    
-                    {% if villa.get('Status')|lower == 'sold out' %}
-                    <div class="sold-out-overlay text-uppercase">🚫 Sold Out</div>
-                    {% endif %}
-
+                    {% if villa.get('Status')|lower == 'sold out' %}<div class="sold-out-overlay text-uppercase">🚫 Sold Out</div>{% endif %}
                     <img src="{{ villa.get('Image_URL') }}" class="card-img-top" style="height:220px; object-fit:cover; {% if villa.get('Status')|lower == 'sold out' %}filter: grayscale(0.8);{% endif %}">
-                    
                     <div class="card-body p-4 text-start d-flex flex-column">
                         <span class="villa-title-main text-uppercase">{{ villa.get('Villa_Name') }}</span>
-                        
                         <div class="d-flex gap-2 mt-2 mb-2 small fw-bold text-muted">
                             <span><i class="bi bi-people text-primary"></i> {{ villa.get('Guests') }} Guests</span>
                             <span>•</span>
                             <span><i class="bi bi-door-open text-primary"></i> {{ villa.get('BHK') }} BHK</span>
                         </div>
-
                         <div class="mb-2">
                             {% if villa.get('Amenities') %}
                                 {% for amen in villa.get('Amenities').split('|')[:3] %}
@@ -82,22 +76,13 @@
                                 {% endfor %}
                             {% endif %}
                         </div>
-
-                        <div class="mb-3">
-                            <p class="villa-desc-text">
-                                Spend your day relaxing by your private pool and enjoy the cool mountain air of Lonavala...
-                            </p>
-                        </div>
-
                         <div class="mt-auto">
-                            {# ✅ Fixed Price Logic for your app.py #}
                             {% set current_p = villa.get('Display_Price', 0)|int %}
-                            
                             {% if current_p > 0 %}
                                 <div class="d-flex align-items-center mb-1">
                                     {% if villa.get('Original_Price')|int > current_p %}
                                         <span class="price-cut">₹{{ villa.get('Original_Price') }}</span>
-                                        <span class="off-tag">OFFER</span>
+                                        <span class="off-tag">SPECIAL OFFER</span>
                                     {% endif %}
                                 </div>
                                 <div class="d-flex align-items-baseline">
@@ -108,7 +93,6 @@
                                 <span class="fs-5 fw-bold text-info">Price on Request</span>
                             {% endif %}
                         </div>
-
                         <div class="mt-3">
                             {% if villa.get('Status')|lower == 'sold out' %}
                             <button class="btn btn-secondary w-100 rounded-pill fw-bold" disabled>Fully Booked</button>
@@ -124,7 +108,35 @@
     </div>
 </div>
 
-{# --- Attractions Section --- #}
+<div class="container py-5 mt-4">
+    <div class="bg-light rounded-5 p-5">
+        <h3 class="fw-bold text-center mb-5">How to Book Your Stay 📅</h3>
+        <div class="row g-4 text-center">
+            <div class="col-md-4">
+                <div class="benefit-card bg-white">
+                    <i class="bi bi-search fs-1 text-primary mb-3 d-block"></i>
+                    <h6 class="fw-bold">1. Select Villa</h6>
+                    <p class="small text-muted mb-0">Browse our curated list of private pool villas.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="benefit-card bg-white">
+                    <i class="bi bi-chat-dots fs-1 text-primary mb-3 d-block"></i>
+                    <h6 class="fw-bold">2. Quick Enquiry</h6>
+                    <p class="small text-muted mb-0">Send us your dates and guest details via form.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="benefit-card bg-white">
+                    <i class="bi bi-calendar-check fs-1 text-primary mb-3 d-block"></i>
+                    <h6 class="fw-bold">3. Confirm & Relax</h6>
+                    <p class="small text-muted mb-0">Pay the token amount and receive your voucher.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="container py-5">
     <h3 class="fw-bold mb-4 text-center">Popular Near You 🌄</h3>
     <div class="row g-3">
@@ -149,7 +161,6 @@
             const res = await fetch('https://api.openweathermap.org/data/2.5/weather?q=Lonavala&units=metric&appid=ff33d264f24db26d13749072556f8794');
             const data = await res.json();
             document.getElementById('temp').innerText = Math.round(data.main.temp);
-            document.getElementById('weather-desc').innerText = data.weather[0].description;
             const iconCode = data.weather[0].icon;
             document.getElementById('weather-icon').innerHTML = `<img src="https://openweathermap.org/img/wn/${iconCode}.png" width="40">`;
         } catch (e) { document.getElementById('temp').innerText = "28"; }
