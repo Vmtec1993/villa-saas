@@ -1,32 +1,56 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0 p-4 rounded-4">
-                <h2 class="fw-bold mb-3 text-center">Contact <span class="text-primary">Us</span></h2>
-                <p class="text-muted text-center mb-4">हमसे संपर्क करने के लिए नीचे दिए गए बटन का उपयोग करें।</p>
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0 p-4 rounded-5 overflow-hidden">
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold mb-1">Contact <span class="text-primary">Us</span></h2>
+                    <p class="text-muted small">हमसे संपर्क करने के लिए नीचे दिए गए फॉर्म का उपयोग करें।</p>
+                </div>
                 
-                <div class="list-group list-group-flush mb-4">
-                    <div class="list-group-item d-flex align-items-center py-3 border-0">
-                        <i class="bi bi-geo-alt-fill text-primary fs-4 me-3"></i>
-                        <span>Lonavala, Maharashtra, India</span>
+                <div class="bg-light p-3 rounded-4 mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-white rounded-circle p-2 shadow-sm me-3"><i class="bi bi-geo-alt-fill text-primary"></i></div>
+                        <span class="small fw-bold">Lonavala, Maharashtra, India</span>
                     </div>
-                    <div class="list-group-item d-flex align-items-center py-3 border-0">
-                        <i class="bi bi-telephone-fill text-success fs-4 me-3"></i>
-                        <span>+91 9762202897</span>
-                    </div>
-                    <div class="list-group-item d-flex align-items-center py-3 border-0">
-                        <i class="bi bi-envelope-fill text-danger fs-4 me-3"></i>
-                        <span>info@morevistas.com</span>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-white rounded-circle p-2 shadow-sm me-3"><i class="bi bi-telephone-fill text-success"></i></div>
+                        <span class="small fw-bold">+91 88300 24994</span> </div>
+                    <div class="d-flex align-items-center">
+                        <div class="bg-white rounded-circle p-2 shadow-sm me-3"><i class="bi bi-envelope-fill text-danger"></i></div>
+                        <span class="small fw-bold">info@morevistas.com</span>
                     </div>
                 </div>
 
-                <a href="https://wa.me/919762202897" class="btn btn-success w-100 rounded-pill py-2 fw-bold">
-                    <i class="bi bi-whatsapp me-2"></i> Message on WhatsApp
-                </a>
+                <div class="p-2">
+                    <h6 class="fw-bold mb-3 text-center text-uppercase small tracking-widest">Direct Enquiry</h6>
+                    <form action="/enquiry/CONTACT_PAGE" method="POST">
+                        <div class="mb-3">
+                            <input type="text" name="name" class="form-control rounded-pill border-0 bg-light py-2 px-3" placeholder="Aapka Naam" required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="tel" name="phone" class="form-control rounded-pill border-0 bg-light py-2 px-3" placeholder="WhatsApp Number" required>
+                        </div>
+                        
+                        <input type="hidden" name="stay_dates" value="General Enquiry">
+                        <input type="hidden" name="guests" value="N/A">
+
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold shadow-sm transition-transform">
+                            PROCEED TO WHATSAPP <i class="bi bi-whatsapp ms-2"></i>
+                        </button>
+                    </form>
+                    <p class="text-center text-muted mt-3 x-small">Submit form to start a secure chat with MoreVistas.</p>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .rounded-5 { border-radius: 30px !important; }
+    .tracking-widest { letter-spacing: 2px; }
+    .transition-transform:active { transform: scale(0.95); }
+    .x-small { font-size: 0.7rem; }
+</style>
 {% endblock %}
