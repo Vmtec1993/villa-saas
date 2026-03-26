@@ -38,15 +38,15 @@
         <form action="/update-settings" method="POST" class="row g-3 align-items-end">
             <div class="col-md-5">
                 <label class="small fw-bold text-muted mb-2">Banner Image URL</label>
-                <input type="text" name="banner_url" class="form-control form-control-pill" value="{{ settings.get('Banner_URL', '') if settings else '' }}">
+                <input type="text" name="banner_url" class="form-control form-control-pill" value="{{ settings.get('Banner_URL', '') or settings.get('banner_url', '') }}">
             </div>
             <div class="col-md-3">
                 <label class="small fw-bold text-muted mb-2">Offer Badge Text</label>
-                <input type="text" name="offer_text" class="form-control form-control-pill" value="{{ settings.get('Offer_Text', '') if settings else '' }}">
+                <input type="text" name="offer_text" class="form-control form-control-pill" value="{{ settings.get('Offer_Text', '') or settings.get('offer_text', '') }}">
             </div>
             <div class="col-md-2">
                 <div class="form-check form-switch mb-2">
-                    <input class="form-check-input" type="checkbox" name="banner_show" id="bannerShow" {% if settings and settings.get('Banner_Show') == 'TRUE' %}checked{% endif %}>
+                    <input class="form-check-input" type="checkbox" name="banner_show" id="bannerShow" {% if settings and (settings.get('Banner_Show') == 'TRUE' or settings.get('banner_show') == 'TRUE') %}checked{% endif %}>
                     <label class="form-check-label small fw-bold" for="bannerShow">Show Banner</label>
                 </div>
             </div>
@@ -56,7 +56,7 @@
         </form>
     </div>
 
-    {# --- PARTNER REQUESTS SECTION (FIXED FOR NONE VALUES) --- #}
+    {# --- PARTNER REQUESTS SECTION (VENDORS) --- #}
     <div class="table-container border-start border-warning border-5">
         <h5 class="fw-bold mb-4"><i class="bi bi-briefcase-fill text-warning me-2"></i>New Partner Requests (Vendors)</h5>
         <div class="table-responsive">
@@ -147,7 +147,7 @@
                         </td>
                     </tr>
 
-                    {# --- MODAL SECTION --- #}
+                    {# --- EDIT MODAL --- #}
                     <div class="modal fade" id="editModal{{ villa.get('Villa_ID') }}" tabindex="-1" aria-hidden="true">
                         <div class="modal-dialog modal-xl modal-dialog-scrollable">
                             <div class="modal-content" style="border-radius: 25px;">
@@ -158,11 +158,11 @@
                                 <div class="modal-body p-4 pt-2">
                                     
                                     <div class="bg-light p-3 border rounded-4 mb-4">
-                                        <span class="section-label text-danger mb-2 mt-0">QUICK OFFLINE BOOKING (AUTO SOLD OUT)</span>
+                                        <span class="section-label text-danger mb-2 mt-0">QUICK OFFLINE BOOKING</span>
                                         <form action="/update-offline-dates" method="POST" class="row g-2 align-items-end">
                                             <input type="hidden" name="Villa_ID" value="{{ villa.get('Villa_ID') }}">
                                             <div class="col-md-8">
-                                                <label class="small fw-bold">Select Dates (Already Booked):</label>
+                                                <label class="small fw-bold">Select Dates (Booked):</label>
                                                 <input type="text" name="Sold_Dates" class="form-control form-control-pill calendar-input multi-picker" 
                                                        placeholder="Select dates..." value="{{ villa.get('Sold_Dates', '') }}">
                                             </div>
