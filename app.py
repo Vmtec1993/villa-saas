@@ -5,6 +5,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 from oauth2client.service_account import ServiceAccountCredentials
 import requests
 from datetime import datetime
+import urllib.parse  # ✅ Naya import redirect message ke liye
 
 app = Flask(__name__)
 app.secret_key = "morevistas_secure_2026" 
@@ -22,7 +23,7 @@ sheet = None
 places_sheet = None
 enquiry_sheet = None
 settings_sheet = None
-vendor_sheet = None # ✅ Naya Vendor Sheet variable
+vendor_sheet = None 
 
 def init_sheets():
     global sheet, places_sheet, enquiry_sheet, settings_sheet, vendor_sheet
@@ -42,7 +43,7 @@ def init_sheets():
             places_sheet = all_ws.get("Places")
             enquiry_sheet = all_ws.get("Enquiries")
             settings_sheet = all_ws.get("Settings")
-            vendor_sheet = all_ws.get("Vendors") # ✅ Sheet mein 'Vendors' naam ka tab hona chahiye
+            vendor_sheet = all_ws.get("Vendors") 
             print("✅ All Sheets Linked Successfully")
         except Exception as e:
             print(f"❌ Sheet Init Error: {e}")
@@ -131,7 +132,6 @@ def index():
         except: pass
     return render_template('index.html', villas=villas, tourist_places=places, settings=settings)
 
-# ✅ NEW: Vendor Onboarding Logic
 @app.route('/vendor-onboarding', methods=['GET', 'POST'])
 def vendor_onboarding():
     if request.method == 'POST':
@@ -162,20 +162,33 @@ def villa_details(villa_id):
     if not imgs: imgs = [villa.get('Image_URL')]
     return render_template('villa_details.html', villa=villa, villa_images=imgs)
 
+# ✅ UPDATED: Enquiry route now redirects to WhatsApp after saving
 @app.route('/enquiry/<villa_id>', methods=['GET', 'POST'])
 def enquiry(villa_id):
     villas = get_rows(sheet)
     villa = next((v for v in villas if v.get('Villa_ID') == str(villa_id).strip()), None)
+    
     if request.method == 'POST':
-        name, phone = request.form.get('name'), request.form.get('phone')
-        dates, guests = request.form.get('stay_dates'), request.form.get('guests')
+        name = request.form.get('name')
+        phone = request.form.get('phone')
+        dates = request.form.get('stay_dates')
+        guests = request.form.get('guests')
         v_name = villa.get('Villa_Name', 'Villa') if villa else "Villa"
+        
+        # Google Sheet Save
         if enquiry_sheet:
             try: enquiry_sheet.append_row([datetime.now().strftime("%d-%m-%Y %H:%M"), name, phone, dates, guests, v_name])
             except: pass
+            
+        # Telegram Alert
         alert = f"🚀 *New Enquiry!*\n🏡 *Villa:* {v_name}\n👤 *Name:* {name}\n📞 *Phone:* {phone}\n📅 *Dates:* {dates}\n👥 *Guests:* {guests}"
         requests.get(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", params={"chat_id": TELEGRAM_CHAT_ID, "text": alert, "parse_mode": "Markdown"})
-        return render_template('success.html', name=name, villa_name=v_name)
+        
+        # ✅ Redirect to WhatsApp with message
+        msg = f"Hi MoreVistas, I am {name}. I want to enquire about {v_name} for {guests} guests on {dates}."
+        encoded_msg = urllib.parse.quote(msg)
+        return redirect(f"https://wa.me/918830024994?text={encoded_msg}")
+        
     return render_template('enquiry.html', villa=villa)
 
 @app.route('/admin-login', methods=['GET', 'POST'])
@@ -197,8 +210,6 @@ def admin_dashboard():
     villas = get_rows(sheet)
     all_enquiries = get_rows(enquiry_sheet)
     enquiries = all_enquiries[-10:] if all_enquiries else []
-    
-    # ✅ NEW: Vendors list in Dashboard
     vendors_list = get_rows(vendor_sheet)[-10:] if vendor_sheet else []
     
     settings = {}
@@ -309,4 +320,4 @@ def list_property(): return render_template('list_property.html')
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
-                                    
+            
