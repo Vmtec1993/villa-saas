@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
 <style>
-    :root { --primary-blue: #0d6efd; --dark-bg: #f8f9fa; }
+    :root { --primary-blue: #0d6efd; --dark-bg: #f8f9fa; --gold-vip: #b8860b; }
     body { background-color: var(--dark-bg); font-family: 'Plus Jakarta Sans', sans-serif; }
     .admin-nav { background: white; border-bottom: 1px solid #dee2e6; padding: 15px 0; }
     .table-container { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 30px; }
@@ -15,6 +15,9 @@
     .modal-xl { max-width: 90% !important; }
     .section-label { font-size: 0.7rem; font-weight: 800; color: #0d6efd; text-transform: uppercase; letter-spacing: 1px; margin-top: 15px; display: block; border-bottom: 1px solid #eee; padding-bottom: 5px; }
     .calendar-input { background-color: #fff9f9 !important; border: 1px solid #ffc1c1 !important; cursor: pointer; }
+    
+    /* ✅ New Partner Row Style */
+    .partner-row { border-left: 4px solid var(--gold-vip); }
 </style>
 
 <nav class="admin-nav mb-4">
@@ -52,6 +55,45 @@
         </form>
     </div>
 
+    {# --- ✅ NEW: PARTNER REQUESTS SECTION --- #}
+    <div class="table-container border-start border-warning border-5">
+        <h5 class="fw-bold mb-4"><i class="bi bi-briefcase-fill text-warning me-2"></i>New Partner Requests (Vendors)</h5>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Owner Name</th>
+                        <th>Phone</th>
+                        <th>Villa & Location</th>
+                        <th>Exp. Rent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for v in vendors %}
+                    <tr class="partner-row">
+                        <td class="small text-muted">{{ v.get('Timestamp') or v.get('Date') }}</td>
+                        <td><span class="fw-bold">{{ v.get('owner_name') }}</span></td>
+                        <td>
+                            <a href="https://wa.me/{{ v.get('phone')|replace(' ', '')|replace('+', '') }}" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                                <i class="bi bi-whatsapp"></i> {{ v.get('phone') }}
+                            </a>
+                        </td>
+                        <td>
+                            <div class="small fw-bold">{{ v.get('villa_name') }}</div>
+                            <div class="small text-muted"><i class="bi bi-geo-alt"></i> {{ v.get('location') }}</div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">₹{{ v.get('expected_rent') }}</span></td>
+                    </tr>
+                    {% endfor %}
+                    {% if not vendors %}
+                    <tr><td colspan="5" class="text-center py-3 text-muted small">No new partner requests found.</td></tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     {# --- VILLA INVENTORY SECTION --- #}
     <div class="table-container">
         <h5 class="fw-bold mb-4"><i class="bi bi-gear-fill me-2"></i>Villa Inventory Control</h5>
@@ -82,20 +124,19 @@
                                 </button>
                                 
                                 {# --- QUICK MANUAL STATUS UPDATE LOGIC --- #}
-                                {% if villa.get('Status') == 'Sold Out' %}
-                                    <a href="/update-status/{{ villa.get('Villa_ID') }}/Available" class="btn btn-sm btn-outline-success rounded-pill px-3">
-                                        <i class="bi bi-check-circle me-1"></i> Mark Available
-                                    </a>
-                                {% else %}
-                                    <a href="/update-status/{{ villa.get('Villa_ID') }}/Sold Out" class="btn btn-sm btn-outline-danger rounded-pill px-3">
-                                        <i class="bi bi-x-circle me-1"></i> Mark Sold Out
-                                    </a>
-                                {% endif %}
+                                <form action="/quick-status-update" method="POST" style="display:inline;">
+                                    <input type="hidden" name="Villa_ID" value="{{ villa.get('Villa_ID') }}">
+                                    <input type="hidden" name="current_status" value="{{ villa.get('Status') }}">
+                                    <button type="submit" class="btn btn-sm {% if villa.get('Status') == 'Sold Out' %}btn-outline-success{% else %}btn-outline-danger{% endif %} rounded-pill px-3">
+                                        <i class="bi {% if villa.get('Status') == 'Sold Out' %}bi-check-circle{% else %}bi-x-circle{% endif %} me-1"></i> 
+                                        {% if villa.get('Status') == 'Sold Out' %}Mark Available{% else %}Mark Sold Out{% endif %}
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>
 
-                    {# --- MODAL SECTION (Keep as original) --- #}
+                    {# --- MODAL SECTION --- #}
                     <div class="modal fade" id="editModal{{ villa.get('Villa_ID') }}" tabindex="-1" aria-hidden="true">
                         <div class="modal-dialog modal-xl modal-dialog-scrollable">
                             <div class="modal-content" style="border-radius: 25px;">
