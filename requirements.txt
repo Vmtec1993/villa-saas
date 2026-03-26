@@ -1,5 +1,6 @@
 flask
+gunicorn
+requests
+pandas
 gspread
 oauth2client
-requests
-gunicorn
