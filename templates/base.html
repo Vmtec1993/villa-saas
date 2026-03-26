@@ -43,7 +43,6 @@
         .nav-link-custom:hover { background: #111; color: var(--luxury-blue); padding-left: 30px; }
         .nav-link-admin { color: #ffc107 !important; font-weight: bold; border-left: 4px solid #ffc107; }
         
-        /* ✅ New Partner Link Highlight */
         .nav-link-partner { color: var(--hologram-gold) !important; font-weight: bold; }
 
         /* ✅ CONTACT BUTTONS */
@@ -80,10 +79,7 @@
                 <a href="/admin-logout" class="nav-link-custom text-danger"><i class="bi bi-box-arrow-right me-3"></i>Logout</a>
             {% endif %}
             <a href="/explore" class="nav-link-custom"><i class="bi bi-geo-alt me-3"></i>Tourist Points</a>
-            
-            <!-- ✅ Updated Link: Ab yeh direct Form par jayega -->
             <a href="/vendor-onboarding" class="nav-link-custom nav-link-partner"><i class="bi bi-building-up me-3"></i>List Your Property</a>
-            
             <a href="/contact" class="nav-link-custom"><i class="bi bi-telephone me-3"></i>Contact Us</a>
             <a href="/legal" class="nav-link-custom"><i class="bi bi-shield-check me-3"></i>Privacy Policy</a>
         </div>
@@ -104,9 +100,7 @@
                 </a>
             </div>
             <div style="flex-grow:1; text-align:right; padding-right:25px;">
-                <!-- ✅ New: Partner Button for Desktop -->
                 <a href="/vendor-onboarding" class="btn btn-outline-dark rounded-pill px-3 fw-bold shadow-sm d-none d-lg-inline-block me-2 small" style="font-size: 0.75rem;">PARTNER WITH US</a>
-                
                 <a href="tel:+918830024994" class="btn btn-info text-white rounded-pill px-4 fw-bold shadow-sm d-none d-md-inline-block">CALL NOW</a>
             </div>
         </div>
@@ -115,7 +109,8 @@
     <main>{% block content %}{% endblock %}</main>
 
     <div class="floating-contact-wrap">
-        <a href="https://wa.me/918830024994?text=Hi%20MoreVistas,%20I'm%20interested%20in%20booking%20a%20villa." class="side-btn btn-wa" target="_blank">
+        <!-- ✅ CHANGED: Direct WhatsApp ki jagah ab Enquiry Form khulega -->
+        <a href="/enquiry/General" class="side-btn btn-wa">
             <i class="bi bi-whatsapp"></i> WhatsApp
         </a>
         <a href="tel:+918830024994" class="side-btn btn-call">
@@ -137,7 +132,6 @@
                 <span class="footer-dot">•</span>
                 <a href="/contact" class="footer-link">Contact Us</a>
                 <span class="footer-dot">•</span>
-                <!-- ✅ New: Footer Partner Link -->
                 <a href="/vendor-onboarding" class="footer-link fw-bold text-white">List Your Property</a>
             </div>
             <p class="small opacity-50">© 2026 MOREVISTAS LUXURY VILLAS. ALL RIGHTS RESERVED.</p>
