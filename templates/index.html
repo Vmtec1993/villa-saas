@@ -34,11 +34,23 @@
     .animate-pulse { animation: pulse-red 2s infinite; }
     @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     .villa-title-main { background: linear-gradient(45deg, #ff416c, #ff4b2b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 850; font-size: 1.3rem; }
-    .price-cut { text-decoration: line-through; color: #6c757d; font-size: 0.9rem; margin-right: 5px; }
+    .price-cut { text-decoration: line-through; color: #6c757d; font-size: 0.9rem; margin-right: 8px; }
     .off-tag { background: #28a745; color: white; font-size: 0.75rem; padding: 2px 10px; border-radius: 5px; font-weight: bold; }
     .sold-out-overlay { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.7); color: white; padding: 5px 15px; border-radius: 50px; font-size: 0.75rem; font-weight: bold; z-index: 5; border: 1px solid rgba(255,255,255,0.3); }
     .highlight-card { border: none; transition: 0.3s; background: #f8f9fa; border-radius: 20px; }
     .highlight-card:hover { transform: translateY(-5px); background: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    
+    .villa-desc-text {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 0.85rem;
+        color: #555;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        font-style: italic;
+    }
 </style>
 
 <div class="container mt-4 text-center">
@@ -59,38 +71,48 @@
 
                     <img src="{{ villa.Image_URL }}" class="card-img-top" style="height:220px; object-fit:cover; {% if villa.Status|lower == 'sold out' %}filter: grayscale(0.8);{% endif %}">
                     
-                    <div class="card-body p-4 text-start">
+                    <div class="card-body p-4 text-start d-flex flex-column">
                         <span class="villa-title-main text-uppercase">{{ villa.Villa_Name }}</span>
                         
-                        <div class="mt-2 mb-3">
-                            {% if villa.Price and villa.Price|int > 0 %}
+                        <div class="d-flex gap-2 mt-2 mb-2 small fw-bold text-muted">
+                            <span><i class="bi bi-people text-primary"></i> {{ villa.Guests }} Guests</span>
+                            <span>•</span>
+                            <span><i class="bi bi-door-open text-primary"></i> {{ villa.BHK }} BHK</span>
+                        </div>
+
+                        <div class="mb-3">
+                            <p class="villa-desc-text">
+                                Spend your day relaxing by your private pool and enjoy the cool mountain air of Lonavala at {{ villa.Villa_Name }}...
+                            </p>
+                        </div>
+
+                        <div class="mt-auto">
+                            {# --- सुधरा हुआ प्राइस सेक्शन --- #}
+                            {% set current_p = villa.get('current_display_price', villa.get('Price', 0))|int %}
+                            
+                            {% if current_p > 0 %}
                                 <div class="d-flex align-items-center mb-1">
-                                    {% if villa.Original_Price and villa.Original_Price|int > villa.Price|int %}
-                                    <span class="price-cut">₹{{ villa.Original_Price }}</span>
-                                    <span class="off-tag">
-                                        {{ (((villa.Original_Price|int - villa.Price|int) / villa.Original_Price|int) * 100)|int }}% OFF
-                                    </span>
+                                    {% if villa.get('amount_saved', 0)|int > 0 %}
+                                        <span class="price-cut">₹{{ villa.Original_Price }}</span>
+                                        <span class="off-tag">SAVE ₹{{ villa.amount_saved }}</span>
                                     {% endif %}
                                 </div>
                                 <div class="d-flex align-items-baseline">
-                                    <span class="fs-4 fw-bold text-primary">₹{{ villa.Price|int }}</span>
+                                    <span class="fs-4 fw-bold text-primary">₹{{ current_p }}</span>
                                     <small class="text-muted ms-1">/night</small>
                                 </div>
                             {% else %}
-                                <span class="fs-5 fw-bold text-primary">Price on Request</span>
+                                <span class="fs-5 fw-bold text-info">Price on Request</span>
                             {% endif %}
                         </div>
 
-                        <div class="d-flex justify-content-between p-2 bg-light rounded-3 small fw-bold mb-3">
-                            <span><i class="bi bi-people me-1"></i> {{ villa.Guests }} Guests</span>
-                            <span><i class="bi bi-door-open me-1"></i> {{ villa.BHK }} BHK</span>
+                        <div class="mt-3">
+                            {% if villa.Status|lower == 'sold out' %}
+                            <button class="btn btn-secondary w-100 rounded-pill fw-bold" disabled>Fully Booked</button>
+                            {% else %}
+                            <a href="/villa/{{ villa.Villa_ID }}" class="btn btn-outline-primary w-100 rounded-pill fw-bold">View Details</a>
+                            {% endif %}
                         </div>
-
-                        {% if villa.Status|lower == 'sold out' %}
-                        <button class="btn btn-secondary w-100 rounded-pill fw-bold" disabled>Fully Booked</button>
-                        {% else %}
-                        <a href="/villa/{{ villa.Villa_ID }}" class="btn btn-outline-primary w-100 rounded-pill fw-bold">View Details</a>
-                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -103,6 +125,7 @@
     </div>
 </div>
 
+{# --- बाकी का Footer और Attractions वाला हिस्सा वैसा ही रहेगा --- #}
 <div class="container mt-5 py-5">
     <div class="bg-light rounded-5 p-4 p-md-5 shadow-sm border">
         <h3 class="fw-bold mb-5 text-center">Why Stay With <span class="text-primary">MoreVistas?</span></h3>
@@ -146,10 +169,6 @@
                 </div>
             </div>
             {% endfor %}
-        {% else %}
-            <div class="col-12 text-center py-4">
-                <div class="text-muted">Lonavala attractions loading...</div>
-            </div>
         {% endif %}
     </div>
 </div>
@@ -164,7 +183,6 @@
             const iconCode = data.weather[0].icon;
             document.getElementById('weather-icon').innerHTML = `<img src="https://openweathermap.org/img/wn/${iconCode}.png" width="40">`;
         } catch (e) { 
-            console.log("Weather error"); 
             document.getElementById('temp').innerText = "28"; 
         }
     }
