@@ -5,13 +5,13 @@
         <div class="col-md-5">
             <div class="card border-0 shadow-lg" style="border-radius: 25px; overflow: hidden;">
                 <div class="bg-dark text-white p-4 text-center">
-                    <h4 class="fw-bold mb-0">Enquiry for {{ villa_name }}</h4>
+                    <!-- ✅ Villa ka naam dynamically dikhega -->
+                    <h4 class="fw-bold mb-0">Enquiry for {{ villa.Villa_Name if villa else 'MoreVistas' }}</h4>
                     <p class="small opacity-75 mb-0">Please fill details to chat on WhatsApp</p>
                 </div>
                 <div class="card-body p-4">
-                    <form action="/submit-enquiry" method="POST">
-                        <input type="hidden" name="villa_name" value="{{ villa_name }}">
-                        
+                    <!-- ✅ Action ko current URL par rakha hai -->
+                    <form method="POST">
                         <div class="mb-3">
                             <label class="small fw-bold text-muted">Your Name</label>
                             <input type="text" name="name" class="form-control rounded-pill px-3" placeholder="Enter your name" required>
@@ -22,13 +22,19 @@
                             <input type="tel" name="phone" class="form-control rounded-pill px-3" placeholder="Enter mobile number" required>
                         </div>
 
-                        <div class="mb-4">
-                            <label class="small fw-bold text-muted">Travel Dates (Optional)</label>
-                            <input type="text" name="dates" class="form-control rounded-pill px-3" placeholder="e.g. 15th to 17th Oct">
+                        <div class="row">
+                            <div class="col-md-7 mb-3">
+                                <label class="small fw-bold text-muted">Travel Dates</label>
+                                <input type="text" name="stay_dates" class="form-control rounded-pill px-3" placeholder="e.g. 15-17 Oct" required>
+                            </div>
+                            <div class="col-md-5 mb-3">
+                                <label class="small fw-bold text-muted">Total Guests</label>
+                                <input type="number" name="guests" class="form-control rounded-pill px-3" placeholder="No." required>
+                            </div>
                         </div>
 
-                        <button type="submit" class="btn btn-success w-100 rounded-pill py-3 fw-bold">
-                            <i class="bi bi-whatsapp me-2"></i> START WHATSAPP CHAT
+                        <button type="submit" class="btn btn-success w-100 rounded-pill py-3 fw-bold mt-2">
+                            <i class="bi bi-whatsapp me-2"></i> SEND & CHAT ON WHATSAPP
                         </button>
                     </form>
                 </div>
