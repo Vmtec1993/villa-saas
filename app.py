@@ -50,11 +50,14 @@ def init_sheets():
 
 init_sheets()
 
+# ✅ FIXED: get_rows function to handle "None" values and spaces
 def get_rows(target_sheet):
     if not target_sheet: return []
     try:
         data = target_sheet.get_all_values()
         if not data or len(data) < 1: return []
+        
+        # Headers ko clean karein (spaces hata dein)
         headers = [h.strip() for h in data[0]]
         final_list = []
         
@@ -63,54 +66,50 @@ def get_rows(target_sheet):
         
         for row in data[1:]:
             padded_row = row + [''] * (len(headers) - len(row))
-            item = dict(zip(headers, padded_row))
+            # Sabhi keys/values ko clean karein
+            item = {k: v.strip() for k, v in zip(headers, padded_row)}
             
+            # --- Status Check ---
             sold_dates_str = str(item.get('Sold_Dates', '')).strip()
             if today_str in sold_dates_str:
                 item['Status'] = 'Sold Out'
 
+            # --- Price Cleaning ---
             def clean_p(key):
                 val = str(item.get(key, '')).replace(',', '').replace('₹', '').strip()
-                if not val or val.lower() == 'nan' or val == '0':
+                if not val or val.lower() == 'nan' or val == '0' or val.lower() == 'none':
                     return 0
+                try: return int(float(val))
+                except: return 0
+
+            # Price calculations (sirf un sheets ke liye jahan prices hain)
+            if 'Price' in item:
                 try:
-                    return int(float(val))
-                except:
-                    return 0
+                    item['Price'] = clean_p('Price')
+                    item['Original_Price'] = clean_p('Original_Price')
+                    item['Weekday_Price'] = clean_p('Weekday_Price')
+                    item['Weekend_Price'] = clean_p('Weekend_Price')
+                    
+                    p_base = item['Price']
+                    if today_day >= 4: 
+                        item['current_display_price'] = item['Weekend_Price'] if item['Weekend_Price'] > 0 else p_base
+                    else:
+                        item['current_display_price'] = item['Weekday_Price'] if item['Weekday_Price'] > 0 else p_base
+                    
+                    p = item['current_display_price']
+                    op = item['Original_Price']
+                    item['amount_saved'] = op - p if op > p else 0
+                    item['discount_perc'] = int(((op - p) / op) * 100) if op > p > 0 else 0
+                except: pass
 
-            try:
-                item['Price'] = clean_p('Price')
-                item['Original_Price'] = clean_p('Original_Price')
-                item['Weekday_Price'] = clean_p('Weekday_Price')
-                item['Weekend_Price'] = clean_p('Weekend_Price')
-                
-                p_base = item['Price']
-                if today_day >= 4: 
-                    item['current_display_price'] = item['Weekend_Price'] if item['Weekend_Price'] > 0 else p_base
-                else:
-                    item['current_display_price'] = item['Weekday_Price'] if item['Weekday_Price'] > 0 else p_base
-                
-                p = item['current_display_price']
-                op = item['Original_Price']
-                item['amount_saved'] = op - p if op > p else 0
-                item['discount_perc'] = int(((op - p) / op) * 100) if op > p > 0 else 0
-            except:
-                item['current_display_price'] = 0
-                item['amount_saved'] = 0
-
+            # Rules logic
             raw_rules = str(item.get('Rules', '')).strip()
             if raw_rules:
-                rules_array = []
-                if '|' in raw_rules: rules_array = raw_rules.split('|')
-                elif '•' in raw_rules: rules_array = raw_rules.split('•')
-                elif '\n' in raw_rules: rules_array = raw_rules.split('\n')
-                else: rules_array = [raw_rules]
-                item['Rules_List'] = [r.strip() for r in rules_array if r.strip()]
+                item['Rules_List'] = [r.strip() for r in raw_rules.replace('|','\n').replace('•','\n').split('\n') if r.strip()]
             else:
                 item['Rules_List'] = ["ID Proof Required", "Standard Rules Apply"]
 
             item['Villa_ID'] = str(item.get('Villa_ID', '')).strip()
-            item['Sold_Dates'] = sold_dates_str
             final_list.append(item)
         return final_list
     except Exception as e:
@@ -135,22 +134,25 @@ def index():
 @app.route('/vendor-onboarding', methods=['GET', 'POST'])
 def vendor_onboarding():
     if request.method == 'POST':
-        v_data = [
-            datetime.now().strftime("%d-%m-%Y %H:%M"),
-            request.form.get('owner_name'),
-            request.form.get('phone'),
-            request.form.get('villa_name'),
-            request.form.get('location'),
-            request.form.get('expected_rent'),
-            request.form.get('amenities')
-        ]
+        # Form se data uthana (Ensuring names match HTML)
+        o_name = request.form.get('owner_name')
+        phone = request.form.get('phone')
+        v_name = request.form.get('villa_name')
+        loc = request.form.get('location')
+        rent = request.form.get('expected_rent')
+        amen = request.form.get('amenities')
+        
+        v_data = [datetime.now().strftime("%d-%m-%Y %H:%M"), o_name, phone, v_name, loc, rent, amen]
+        
         if vendor_sheet:
             try: vendor_sheet.append_row(v_data)
             except: pass
         
-        v_alert = f"💼 *New Partner Request!*\n👤 *Owner:* {v_data[1]}\n📞 *Phone:* {v_data[2]}\n🏡 *Villa:* {v_data[3]}\n📍 *Location:* {v_data[4]}\n💰 *Rent:* {v_data[5]}"
-        requests.get(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", params={"chat_id": TELEGRAM_CHAT_ID, "text": v_alert, "parse_mode": "Markdown"})
-        return render_template('list_property_success.html', name=v_data[1])
+        v_alert = f"💼 *New Partner Request!*\n👤 *Owner:* {o_name}\n📞 *Phone:* {phone}\n🏡 *Villa:* {v_name}\n📍 *Loc:* {loc}\n💰 *Rent:* {rent}"
+        try:
+            requests.get(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", params={"chat_id": TELEGRAM_CHAT_ID, "text": v_alert, "parse_mode": "Markdown"})
+        except: pass
+        return render_template('list_property_success.html', name=o_name)
     return render_template('vendor_form.html')
 
 @app.route('/villa/<villa_id>')
@@ -162,7 +164,6 @@ def villa_details(villa_id):
     if not imgs: imgs = [villa.get('Image_URL')]
     return render_template('villa_details.html', villa=villa, villa_images=imgs)
 
-# ✅ UPDATED: Enquiry route with professional WhatsApp formatting
 @app.route('/enquiry/<villa_id>', methods=['GET', 'POST'])
 def enquiry(villa_id):
     villas = get_rows(sheet)
@@ -171,38 +172,20 @@ def enquiry(villa_id):
     if request.method == 'POST':
         name = request.form.get('name')
         phone = request.form.get('phone')
-        dates = request.form.get('stay_dates') # Range selection from Flatpickr
+        dates = request.form.get('stay_dates') 
         guests = request.form.get('guests')
         v_name = villa.get('Villa_Name', 'Villa') if villa else "Villa"
         
-        # Save to Google Sheet
         if enquiry_sheet:
-            try: 
-                enquiry_sheet.append_row([
-                    datetime.now().strftime("%d-%m-%Y %H:%M"), 
-                    name, 
-                    phone, 
-                    dates, 
-                    guests, 
-                    v_name
-                ])
+            try: enquiry_sheet.append_row([datetime.now().strftime("%d-%m-%Y %H:%M"), name, phone, dates, guests, v_name])
             except: pass
             
-        # Telegram Alert
         alert = f"🚀 *New Enquiry!*\n🏡 *Villa:* {v_name}\n👤 *Name:* {name}\n📞 *Phone:* {phone}\n📅 *Dates:* {dates}\n👥 *Guests:* {guests}"
         try:
-            requests.get(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", 
-                         params={"chat_id": TELEGRAM_CHAT_ID, "text": alert, "parse_mode": "Markdown"})
+            requests.get(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", params={"chat_id": TELEGRAM_CHAT_ID, "text": alert, "parse_mode": "Markdown"})
         except: pass
         
-        # ✅ Professional WhatsApp Redirect Message
-        whatsapp_msg = (
-            f"Hi MoreVistas, I am *{name}*.\n\n"
-            f"I want to enquire about *{v_name}* 🏡\n"
-            f"📅 *Dates:* {dates}\n"
-            f"👥 *Guests:* {guests}\n\n"
-            f"Please share availability and pricing details."
-        )
+        whatsapp_msg = f"Hi MoreVistas, I am *{name}*.\nI want to enquire about *{v_name}* 🏡\n📅 *Dates:* {dates}\n👥 *Guests:* {guests}"
         encoded_msg = urllib.parse.quote(whatsapp_msg)
         return redirect(f"https://wa.me/918830024994?text={encoded_msg}")
         
@@ -212,31 +195,26 @@ def enquiry(villa_id):
 def admin_login():
     error = None
     if request.method == 'POST':
-        u = request.form.get('username')
-        p = request.form.get('password')
-        if u == ADMIN_USER and p == ADMIN_PASS:
+        if request.form.get('username') == ADMIN_USER and request.form.get('password') == ADMIN_PASS:
             session['logged_in'] = True
             return redirect(url_for('admin_dashboard'))
-        else:
-            error = "Invalid Username"
+        error = "Invalid Credentials"
     return render_template('admin_login.html', error=error)
 
 @app.route('/admin')
 def admin_dashboard():
     if not session.get('logged_in'): return redirect(url_for('admin_login'))
     villas = get_rows(sheet)
-    all_enquiries = get_rows(enquiry_sheet)
-    enquiries = all_enquiries[-10:] if all_enquiries else []
-    vendors_list = get_rows(vendor_sheet)[-10:] if vendor_sheet else []
+    enquiries = get_rows(enquiry_sheet)[-15:] # Latest 15
+    vendors = get_rows(vendor_sheet)[-15:]  # Latest 15
     
     settings = {}
     if settings_sheet:
         try:
-            s_data = settings_sheet.get_all_values()
-            for r in s_data:
+            for r in settings_sheet.get_all_values():
                 if len(r) >= 2: settings[r[0].strip()] = r[1].strip()
         except: pass
-    return render_template('admin_dashboard.html', villas=villas, enquiries=enquiries, vendors=vendors_list, settings=settings)
+    return render_template('admin_dashboard.html', villas=villas, enquiries=enquiries, vendors=vendors, settings=settings)
 
 @app.route('/admin-logout')
 def admin_logout():
@@ -258,19 +236,18 @@ def update_settings():
 @app.route('/update-offline-dates', methods=['POST'])
 def update_offline_dates():
     if not session.get('logged_in'): return redirect(url_for('admin_login'))
-    villa_id = request.form.get('Villa_ID')
-    sold_dates = request.form.get('Sold_Dates')
+    v_id = request.form.get('Villa_ID')
+    s_dates = request.form.get('Sold_Dates')
     if sheet:
         try:
             data = sheet.get_all_values()
             headers = data[0]
             id_idx = headers.index('Villa_ID')
-            sold_idx = headers.index('Sold_Dates') if 'Sold_Dates' in headers else -1
-            if sold_idx != -1:
-                for i, row in enumerate(data[1:], start=2):
-                    if str(row[id_idx]).strip() == str(villa_id).strip():
-                        sheet.update_cell(i, sold_idx + 1, sold_dates)
-                        break
+            sold_idx = headers.index('Sold_Dates')
+            for i, row in enumerate(data[1:], start=2):
+                if str(row[id_idx]).strip() == str(v_id).strip():
+                    sheet.update_cell(i, sold_idx + 1, s_dates)
+                    break
         except: pass
     return redirect(url_for('admin_dashboard'))
 
@@ -295,10 +272,9 @@ def update_full_villa():
             id_idx = headers.index('Villa_ID')
             for i, row in enumerate(data[1:], start=2):
                 if str(row[id_idx]).strip() == str(v_id).strip():
-                    for key, value in updates.items():
+                    for key, val in updates.items():
                         if key in headers:
-                            col_idx = headers.index(key) + 1
-                            sheet.update_cell(i, col_idx, value if value else "")
+                            sheet.update_cell(i, headers.index(key)+1, val)
                     break
         except: pass
     return redirect(url_for('admin_dashboard'))
@@ -313,10 +289,10 @@ def quick_status_update():
         try:
             data = sheet.get_all_values()
             headers = data[0]
-            id_idx = headers.index('Villa_ID')
+            idx = headers.index('Villa_ID')
             st_idx = headers.index('Status')
             for i, row in enumerate(data[1:], start=2):
-                if str(row[id_idx]).strip() == str(v_id).strip():
+                if str(row[idx]).strip() == str(v_id).strip():
                     sheet.update_cell(i, st_idx + 1, new_status)
                     break
         except: pass
@@ -337,4 +313,4 @@ def list_property(): return render_template('list_property.html')
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
-                
+            
