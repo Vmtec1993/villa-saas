@@ -5,7 +5,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 from oauth2client.service_account import ServiceAccountCredentials
 import requests
 from datetime import datetime
-import urllib.parse  # ✅ Naya import redirect message ke liye
+import urllib.parse
 
 app = Flask(__name__)
 app.secret_key = "morevistas_secure_2026" 
@@ -162,7 +162,7 @@ def villa_details(villa_id):
     if not imgs: imgs = [villa.get('Image_URL')]
     return render_template('villa_details.html', villa=villa, villa_images=imgs)
 
-# ✅ UPDATED: Enquiry route now redirects to WhatsApp after saving
+# ✅ UPDATED: Enquiry route with professional WhatsApp formatting
 @app.route('/enquiry/<villa_id>', methods=['GET', 'POST'])
 def enquiry(villa_id):
     villas = get_rows(sheet)
@@ -171,22 +171,39 @@ def enquiry(villa_id):
     if request.method == 'POST':
         name = request.form.get('name')
         phone = request.form.get('phone')
-        dates = request.form.get('stay_dates')
+        dates = request.form.get('stay_dates') # Range selection from Flatpickr
         guests = request.form.get('guests')
         v_name = villa.get('Villa_Name', 'Villa') if villa else "Villa"
         
-        # Google Sheet Save
+        # Save to Google Sheet
         if enquiry_sheet:
-            try: enquiry_sheet.append_row([datetime.now().strftime("%d-%m-%Y %H:%M"), name, phone, dates, guests, v_name])
+            try: 
+                enquiry_sheet.append_row([
+                    datetime.now().strftime("%d-%m-%Y %H:%M"), 
+                    name, 
+                    phone, 
+                    dates, 
+                    guests, 
+                    v_name
+                ])
             except: pass
             
         # Telegram Alert
         alert = f"🚀 *New Enquiry!*\n🏡 *Villa:* {v_name}\n👤 *Name:* {name}\n📞 *Phone:* {phone}\n📅 *Dates:* {dates}\n👥 *Guests:* {guests}"
-        requests.get(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", params={"chat_id": TELEGRAM_CHAT_ID, "text": alert, "parse_mode": "Markdown"})
+        try:
+            requests.get(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", 
+                         params={"chat_id": TELEGRAM_CHAT_ID, "text": alert, "parse_mode": "Markdown"})
+        except: pass
         
-        # ✅ Redirect to WhatsApp with message
-        msg = f"Hi MoreVistas, I am {name}. I want to enquire about {v_name} for {guests} guests on {dates}."
-        encoded_msg = urllib.parse.quote(msg)
+        # ✅ Professional WhatsApp Redirect Message
+        whatsapp_msg = (
+            f"Hi MoreVistas, I am *{name}*.\n\n"
+            f"I want to enquire about *{v_name}* 🏡\n"
+            f"📅 *Dates:* {dates}\n"
+            f"👥 *Guests:* {guests}\n\n"
+            f"Please share availability and pricing details."
+        )
+        encoded_msg = urllib.parse.quote(whatsapp_msg)
         return redirect(f"https://wa.me/918830024994?text={encoded_msg}")
         
     return render_template('enquiry.html', villa=villa)
@@ -320,4 +337,4 @@ def list_property(): return render_template('list_property.html')
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
-            
+                
