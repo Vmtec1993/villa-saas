@@ -109,10 +109,9 @@
                             {% if villa.Status|lower == 'sold out' %}
                                 <button class="btn btn-secondary w-100 rounded-pill fw-bold" disabled>Fully Booked</button>
                             {% else %}
-                                <!-- Button 1: Detail dekhne ke liye -->
                                 <a href="/villa/{{ villa.Villa_ID }}" class="btn btn-outline-primary w-100 rounded-pill fw-bold mb-2">View Details</a>
                                 
-                                <!-- ✅ FIXED: Added WhatsApp Enquiry Button -->
+                                {# --- LINKED TO ENQUIRY FORM INSTEAD OF DIRECT WHATSAPP --- #}
                                 <a href="/enquiry/{{ villa.Villa_ID }}" class="btn btn-success w-100 rounded-pill fw-bold shadow-sm">
                                     <i class="bi bi-whatsapp me-2"></i> WhatsApp Enquiry
                                 </a>
@@ -122,10 +121,6 @@
                 </div>
             </div>
             {% endfor %}
-        {% else %}
-            <div class="col-12 text-center py-5">
-                <p class="text-muted">No villas found. Please check back later!</p>
-            </div>
         {% endif %}
     </div>
 </div>
@@ -186,9 +181,7 @@
             document.getElementById('weather-desc').innerText = data.weather[0].description;
             const iconCode = data.weather[0].icon;
             document.getElementById('weather-icon').innerHTML = `<img src="https://openweathermap.org/img/wn/${iconCode}.png" width="40">`;
-        } catch (e) { 
-            document.getElementById('temp').innerText = "28"; 
-        }
+        } catch (e) { document.getElementById('temp').innerText = "28"; }
     }
     getLonavalaWeather();
 </script>
