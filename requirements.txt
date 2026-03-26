@@ -3,3 +3,6 @@ gspread
 oauth2client
 requests
 gunicorn
+```[span_13](start_span)[span_13](end_span)
+
+**Kya aap chahte hain ki main Admin Dashboard ke liye ek naya "Statistics" section add karun jahan aap dekh sakein kitne enquiries aaye hain?**
