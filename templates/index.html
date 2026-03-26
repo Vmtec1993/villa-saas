@@ -87,7 +87,6 @@
                         </div>
 
                         <div class="mt-auto">
-                            {# --- सुधरा हुआ प्राइस सेक्शन --- #}
                             {% set current_p = villa.get('current_display_price', villa.get('Price', 0))|int %}
                             
                             {% if current_p > 0 %}
@@ -108,9 +107,15 @@
 
                         <div class="mt-3">
                             {% if villa.Status|lower == 'sold out' %}
-                            <button class="btn btn-secondary w-100 rounded-pill fw-bold" disabled>Fully Booked</button>
+                                <button class="btn btn-secondary w-100 rounded-pill fw-bold" disabled>Fully Booked</button>
                             {% else %}
-                            <a href="/villa/{{ villa.Villa_ID }}" class="btn btn-outline-primary w-100 rounded-pill fw-bold">View Details</a>
+                                <!-- Button 1: Detail dekhne ke liye -->
+                                <a href="/villa/{{ villa.Villa_ID }}" class="btn btn-outline-primary w-100 rounded-pill fw-bold mb-2">View Details</a>
+                                
+                                <!-- ✅ FIXED: Added WhatsApp Enquiry Button -->
+                                <a href="/enquiry/{{ villa.Villa_ID }}" class="btn btn-success w-100 rounded-pill fw-bold shadow-sm">
+                                    <i class="bi bi-whatsapp me-2"></i> WhatsApp Enquiry
+                                </a>
                             {% endif %}
                         </div>
                     </div>
@@ -125,7 +130,6 @@
     </div>
 </div>
 
-{# --- बाकी का Footer और Attractions वाला हिस्सा वैसा ही रहेगा --- #}
 <div class="container mt-5 py-5">
     <div class="bg-light rounded-5 p-4 p-md-5 shadow-sm border">
         <h3 class="fw-bold mb-5 text-center">Why Stay With <span class="text-primary">MoreVistas?</span></h3>
