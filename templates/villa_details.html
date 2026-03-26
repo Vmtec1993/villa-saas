@@ -88,7 +88,6 @@
 </style>
 
 <div class="container py-4">
-    {# --- IMAGE SLIDER (ओरिजिनल लॉजिक) --- #}
     <div id="villaSlider" class="carousel slide shadow-sm position-relative mb-4" data-bs-ride="carousel" style="border-radius: 20px; overflow: hidden;">
         {% if villa.amount_saved|int > 0 %}
             <div class="offer-banner">🔥 SPECIAL OFFER LIVE</div>
@@ -115,7 +114,6 @@
             <h1 class="villa-title-detail mb-1">{{ villa.Villa_Name }}</h1>
             <p class="text-muted mb-4"><i class="bi bi-geo-alt-fill text-danger"></i> Lonavala, Maharashtra</p>
 
-            {# --- HIGHLIGHTS (ओरिजिनल) --- #}
             <div class="row g-3 mb-5">
                 <div class="col-4 text-center">
                     <div class="highlight-badge-card">
@@ -145,7 +143,6 @@
                 </p>
             </div>
 
-            {# --- RULES SECTION (आपका स्मार्ट लॉजिक) --- #}
             <div class="rules-section mb-5">
                 <h4 class="fw-bold mb-4"><i class="bi bi-shield-check text-primary me-2"></i>Guest Guidelines</h4>
                 <div class="premium-rules-container">
@@ -177,10 +174,9 @@
 
         <div class="col-md-4">
             <div class="card border-0 shadow-lg rounded-4 p-4 sticky-top" style="top: 100px; z-index: 10;">
-                <h5 class="fw-bold mb-3">Pricing & Booking</h5>
+                <h5 class="fw-bold mb-3 text-muted small text-uppercase">Pricing & Booking</h5>
                 
-                <div class="mb-3">
-                    {# --- UPDATED PRICE LOGIC --- #}
+                <div class="mb-4">
                     {% if villa.current_display_price|int > 0 %}
                         {% if villa.amount_saved|int > 0 %}
                             <div class="d-flex align-items-center mb-1">
@@ -189,24 +185,20 @@
                             </div>
                         {% endif %}
                         <div class="d-flex align-items-baseline">
-                            <span class="fs-1 fw-bold text-primary">₹{{ villa.current_display_price|int }}</span>
-                            <span class="text-muted ms-2">/ night</span>
+                            <span class="fs-1 fw-bold text-dark">₹{{ villa.current_display_price|int }}</span>
+                            <span class="text-muted ms-2 fw-bold">/ night</span>
                         </div>
                     {% else %}
-                        {# Price Request Style #}
-                        <div class="py-2">
-                            <span class="fs-2 fw-bold text-primary text-uppercase">Price on Request</span>
-                        </div>
+                        <div class="py-2"><span class="fs-2 fw-bold text-primary text-uppercase">Price on Request</span></div>
                     {% endif %}
                 </div>
 
-                <div class="d-grid gap-2 mb-3">
+                <div class="d-grid gap-2 mb-4">
                     <button class="btn btn-outline-dark rounded-pill fw-bold" id="btnCheckAvail">
                         <i class="bi bi-calendar3 me-2"></i>CHECK AVAILABILITY
                     </button>
                 </div>
 
-                {# --- CALENDAR CONTAINER --- #}
                 <div id="calendar-container" style="display:none; background: #fdfdfd; padding: 15px; border-radius: 15px; border: 1px solid #eee; margin-bottom: 20px;" class="text-center">
                     <small class="fw-bold mb-2 d-block text-muted">Availability Status</small>
                     <div id="availability-calendar" class="mx-auto"></div>
@@ -217,11 +209,13 @@
                 </div>
 
                 <div class="d-grid gap-3">
-                    <a href="https://wa.me/918830024994?text=Hi,%20I%20am%20interested%20in%20booking%20{{ villa.Villa_Name|urlencode }}" class="btn btn-success rounded-pill py-3 fw-bold shadow-sm">
+                    {# --- UPDATED WHATSAPP LINK WITH PRICE INFO --- #}
+                    <a href="https://wa.me/918830024994?text=Hi,%20I'm%20interested%20in%20booking%20{{ villa.Villa_Name|urlencode }}.%20Price%20seen:%20₹{{ villa.current_display_price|int }}%20per%20night." class="btn btn-success rounded-pill py-3 fw-bold shadow-lg">
                         <i class="bi bi-whatsapp me-2"></i>BOOK ON WHATSAPP
                     </a>
+                    {# --- UPDATED ENQUIRY FORM LINK --- #}
                     <a href="/enquiry/{{ villa.Villa_ID }}" class="btn btn-outline-primary rounded-pill py-3 fw-bold">
-                        <i class="bi bi-envelope-paper me-2"></i>FILL ENQUIRY FORM
+                        <i class="bi bi-pencil-square me-2"></i>FILL ENQUIRY FORM
                     </a>
                 </div>
             </div>
@@ -229,21 +223,17 @@
     </div>
 </div>
 
-{# --- MOBILE BAR (ओरिजिनल लॉजिक के साथ) --- #}
+{# --- MOBILE BAR --- #}
 <div class="mobile-booking-bar d-md-none">
     <div style="flex: 1;">
         {% if villa.current_display_price|int > 0 %}
-            <div class="fw-bold fs-4 text-primary">₹{{ villa.current_display_price|int }}</div>
-            {% if villa.amount_saved > 0 %}
-                <small class="text-success fw-bold">Saved ₹{{ villa.amount_saved }}!</small>
-            {% else %}
-                <small class="text-muted">per night</small>
-            {% endif %}
+            <div class="fw-bold fs-4 text-dark">₹{{ villa.current_display_price|int }}</div>
+            <small class="text-success fw-bold">{% if villa.amount_saved > 0 %}Save ₹{{ villa.amount_saved }}!{% else %}per night{% endif %}</small>
         {% else %}
             <div class="fw-bold fs-5 text-primary">Price on Request</div>
         {% endif %}
     </div>
-    <div style="display: flex; gap: 10px;">
+    <div style="display: flex; gap: 8px;">
         <a href="/enquiry/{{ villa.Villa_ID }}" class="btn btn-outline-primary rounded-pill px-3 py-2 fw-bold"><i class="bi bi-pencil-square"></i></a>
         <a href="https://wa.me/918830024994?text=I%20want%20to%20book%20{{ villa.Villa_Name|urlencode }}" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow"><i class="bi bi-whatsapp"></i> BOOK</a>
     </div>
