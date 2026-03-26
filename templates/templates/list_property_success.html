@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5 my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <!-- Animated Icon Section -->
+            <div class="mb-4">
+                <div class="display-1 text-success">
+                    <i class="bi bi-check-circle-fill shadow-sm rounded-circle"></i>
+                </div>
+            </div>
+            
+            <!-- Welcome Message -->
+            <h1 class="fw-bold mb-3">Registration Received!</h1>
+            <p class="lead text-muted mb-4">
+                Thank you, <span class="text-primary fw-bold">{{ name }}</span>. 
+                Hamne aapke villa ki details receive kar li hain.
+            </p>
+
+            <div class="card border-0 bg-light p-4 rounded-4 mb-4 text-start">
+                <h6 class="fw-bold"><i class="bi bi-info-circle me-2"></i> Next Steps:</h6>
+                <ul class="small text-muted mt-2 mb-0">
+                    <li class="mb-2">Hamari team 24-48 ghanton mein aapko call karegi.</li>
+                    <li>Property ki photos aur verification documents ready rakhein.</li>
+                    <li>Verification ke baad aapka villa <b>MoreVistas</b> par live ho jayega.</li>
+                </ul>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a href="/" class="btn btn-outline-dark rounded-pill px-4 fw-bold">Back to Home</a>
+                <a href="https://wa.me/918830024994?text=Hi, I just registered my villa: {{ name }}" 
+                   class="btn btn-success rounded-pill px-4 fw-bold shadow-sm">
+                   <i class="bi bi-whatsapp me-2"></i> WhatsApp Support
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Chota sa animation effect */
+    .bi-check-circle-fill {
+        display: inline-block;
+        animation: scaleIn 0.5s ease-out;
+    }
+    @keyframes scaleIn {
+        0% { transform: scale(0); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+</style>
+{% endblock %}
