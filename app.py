@@ -9,17 +9,21 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = "morevistas_secure_2026" 
 
-# --- CONFIG (WhatsApp Number Fixed: 8830024994) ---
+# --- CONFIG ---
+# Aapka updated contact info
+CONTACT_NUMBER = "8830024994" 
 TELEGRAM_TOKEN = "7913354522:AAH1XxMP1EMWC59fpZezM8zunZrWQcAqH18"
 TELEGRAM_CHAT_ID = "6746178673"
-WHATSAPP_NUMBER = "918830024994" 
 
 ADMIN_USER = "Admin"
 ADMIN_PASS = "MV@2026" 
 
 # --- Google Sheets Setup ---
 creds_json = os.environ.get('GOOGLE_CREDS')
-sheet, places_sheet, enquiry_sheet, settings_sheet = None, None, None, None
+sheet = None
+places_sheet = None
+enquiry_sheet = None
+settings_sheet = None
 
 def init_sheets():
     global sheet, places_sheet, enquiry_sheet, settings_sheet
@@ -29,15 +33,19 @@ def init_sheets():
             scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
             creds = ServiceAccountCredentials.from_json_keyfile_dict(info, scope)
             client = gspread.authorize(creds)
+            
             SHEET_ID = "1wXlMNAUuW2Fr4L05ahxvUNn0yvMedcVosTRJzZf_1ao"
             main_spreadsheet = client.open_by_key(SHEET_ID)
+            
             sheet = main_spreadsheet.sheet1
             all_ws = {ws.title: ws for ws in main_spreadsheet.worksheets()}
+            
             places_sheet = all_ws.get("Places")
             enquiry_sheet = all_ws.get("Enquiries")
             settings_sheet = all_ws.get("Settings")
-            print("✅ All Sheets Linked")
-        except Exception as e: print(f"❌ Error: {e}")
+            print("✅ All Sheets Linked Successfully")
+        except Exception as e:
+            print(f"❌ Sheet Init Error: {e}")
 
 init_sheets()
 
@@ -48,117 +56,78 @@ def get_rows(target_sheet):
         if not data or len(data) < 1: return []
         headers = [h.strip() for h in data[0]]
         final_list = []
+        
         today_day = datetime.now().weekday()
+        today_str = datetime.now().strftime("%Y-%m-%d") 
+        
         for row in data[1:]:
             padded_row = row + [''] * (len(headers) - len(row))
             item = dict(zip(headers, padded_row))
             
-            # Pricing Logic
-            try:
-                p = int(str(item.get('Price', '0')).replace(',', '').strip())
-                op = int(str(item.get('Original_Price', '0')).replace(',', '').strip())
-                item['Original_Price'] = op
-                wd = int(str(item.get('Weekday_Price', '0')).replace(',', '').strip())
-                we = int(str(item.get('Weekend_Price', '0')).replace(',', '').strip())
-                if today_day >= 4:
-                    item['current_display_price'] = we if we > 0 else p
-                else:
-                    item['current_display_price'] = wd if wd > 0 else p
-                item['amount_saved'] = op - item['current_display_price'] if op > item['current_display_price'] else 0
-            except:
-                item['current_display_price'] = 0
-                item['amount_saved'] = 0
+            # Auto Sold Out Logic
+            sold_dates_str = str(item.get('Sold_Dates', '')).strip()
+            if today_str in sold_dates_str:
+                item['Status'] = 'Sold Out'
 
-            raw_rules = str(item.get('Rules', '')).strip()
-            item['Rules_List'] = [r.strip() for r in (raw_rules.split('|') if '|' in raw_rules else raw_rules.split('\n')) if r.strip()]
-            item['Villa_ID'] = str(item.get('Villa_ID', '')).strip()
+            # Price Logic
+            def clean_p(key):
+                val = str(item.get(key, '')).replace(',', '').replace('₹', '').strip()
+                if not val or val.lower() == 'nan' or val == '0': return 0
+                try: return int(float(val))
+                except: return 0
+
+            item['Price'] = clean_p('Price')
+            item['Original_Price'] = clean_p('Original_Price')
+            item['Weekday_Price'] = clean_p('Weekday_Price')
+            item['Weekend_Price'] = clean_p('Weekend_Price')
+            
+            p_base = item['Price']
+            if today_day >= 4: # Fri, Sat, Sun
+                item['current_display_price'] = item['Weekend_Price'] if item['Weekend_Price'] > 0 else p_base
+            else:
+                item['current_display_price'] = item['Weekday_Price'] if item['Weekday_Price'] > 0 else p_base
+            
             final_list.append(item)
         return final_list
-    except: return []
+    except Exception as e:
+        print(f"Error: {e}")
+        return []
 
-# --- 🚀 PUBLIC ROUTES ---
+# --- Main Routes ---
 
 @app.route('/')
 def index():
     villas = get_rows(sheet)
-    places = get_rows(places_sheet)
-    settings = {}
+    settings = {'Offer_Text': "Welcome", 'Banner_URL': "", 'Banner_Show': 'FALSE'}
     if settings_sheet:
         try:
-            settings = {'Banner_URL': settings_sheet.acell('B1').value, 'Offer_Text': settings_sheet.acell('B2').value, 'Banner_Show': settings_sheet.acell('B3').value}
+            settings['Banner_URL'] = settings_sheet.acell('B1').value or ""
+            settings['Offer_Text'] = settings_sheet.acell('B2').value or ""
+            settings['Banner_Show'] = settings_sheet.acell('B3').value or "FALSE"
         except: pass
-    return render_template('index.html', villas=villas, tourist_places=places, settings=settings)
-
-@app.route('/villa/<villa_id>')
-def villa_details(villa_id):
-    villas = get_rows(sheet)
-    villa = next((v for v in villas if v.get('Villa_ID') == str(villa_id).strip()), None)
-    if not villa: return redirect(url_for('index'))
-    imgs = [villa.get(f'Image_URL_{i}') for i in range(1, 11) if villa.get(f'Image_URL_{i}')]
-    if not imgs or not imgs[0]: imgs = [villa.get('Image_URL')]
-    return render_template('villa_details.html', villa=villa, villa_images=imgs)
+    return render_template('index.html', villas=villas, settings=settings, contact=CONTACT_NUMBER)
 
 @app.route('/enquiry/<villa_id>', methods=['GET', 'POST'])
 def enquiry(villa_id):
     villas = get_rows(sheet)
     villa = next((v for v in villas if v.get('Villa_ID') == str(villa_id).strip()), None)
-    
-    # URL se aayi dates handle karne ke liye (Calendar logic)
-    prefilled_dates = request.args.get('dates', '')
-
     if request.method == 'POST':
         name, phone = request.form.get('name'), request.form.get('phone')
         dates, guests = request.form.get('stay_dates'), request.form.get('guests')
-        v_name = villa.get('Villa_Name', 'Villa') if villa else "General Enquiry"
+        v_name = villa.get('Villa_Name', 'Villa') if villa else "Villa"
         
-        # 1. Sheet mein save karein
+        # Save to Google Sheets
         if enquiry_sheet:
             enquiry_sheet.append_row([datetime.now().strftime("%d-%m-%Y %H:%M"), name, phone, dates, guests, v_name])
         
-        # 2. Telegram Alert
-        alert = f"🚀 *New Lead!*\n🏡 *Villa:* {v_name}\n👤 *Name:* {name}\n📞 *Phone:* {phone}\n📅 *Dates:* {dates}"
+        # Telegram Notification
+        alert = f"🚀 *New Enquiry!*\n🏡 *Villa:* {v_name}\n👤 *Name:* {name}\n📞 *Phone:* {phone}\n📅 *Dates:* {dates}"
         requests.get(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", params={"chat_id": TELEGRAM_CHAT_ID, "text": alert, "parse_mode": "Markdown"})
         
-        # 3. Success Page par redirect karein (Wahan se auto WhatsApp hoga)
-        return redirect(url_for('booking_success', name=name, villa_name=v_name))
-        
-    return render_template('enquiry.html', villa=villa, prefilled_dates=prefilled_dates)
+        return render_template('success.html', name=name, villa_name=v_name)
+    return render_template('enquiry.html', villa=villa)
 
-@app.route('/booking-success')
-def booking_success():
-    name = request.args.get('name', 'Guest')
-    villa_name = request.args.get('villa_name', 'Villa')
-    return render_template('success.html', name=name, villa_name=villa_name)
-
-# --- 🔐 ADMIN SECTION (Baki logic same hai) ---
-
-@app.route('/admin-action/<target>/<action>/<id>')
-def admin_action(target, action, id):
-    if not session.get('logged_in'): return redirect(url_for('admin_login'))
-    t_sheet = sheet if target == 'villa' else places_sheet
-    col_name = 'Villa_ID' if target == 'villa' else 'Place_Name'
-    data = t_sheet.get_all_values()
-    headers = data[0]
-    if action == 'delete':
-        for i, row in enumerate(data[1:], start=2):
-            if str(row[headers.index(col_name)]).strip() == str(id).strip():
-                t_sheet.delete_rows(i)
-                break
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/add-place', methods=['POST'])
-def add_place():
-    if not session.get('logged_in'): return redirect(url_for('admin_login'))
-    if places_sheet:
-        places_sheet.append_row([request.form.get('Place_Name'), request.form.get('Image_URL')])
-    return redirect(url_for('admin_dashboard'))
-
-@app.route('/clear-enquiries')
-def clear_enquiries():
-    if not session.get('logged_in'): return redirect(url_for('admin_login'))
-    if enquiry_sheet:
-        enquiry_sheet.resize(rows=1)
-    return redirect(url_for('admin_dashboard'))
+# --- Admin Section ---
 
 @app.route('/admin-login', methods=['GET', 'POST'])
 def admin_login():
@@ -171,26 +140,9 @@ def admin_login():
 @app.route('/admin')
 def admin_dashboard():
     if not session.get('logged_in'): return redirect(url_for('admin_login'))
-    villas = get_rows(sheet)
-    places = get_rows(places_sheet)
-    enqs = get_rows(enquiry_sheet)[-20:][::-1]
-    settings = {}
-    if settings_sheet:
-        settings = {'Banner_URL': settings_sheet.acell('B1').value, 'Offer_Text': settings_sheet.acell('B2').value, 'Banner_Show': settings_sheet.acell('B3').value}
-    return render_template('admin_dashboard.html', villas=villas, enquiries=enqs, tourist_places=places, settings=settings)
-
-@app.route('/admin-logout')
-def admin_logout():
-    session.clear()
-    return redirect(url_for('index'))
-
-@app.route('/explore')
-def explore(): return render_template('explore.html', tourist_places=get_rows(places_sheet))
-
-@app.route('/contact')
-def contact(): return render_template('contact.html')
+    return render_template('admin_dashboard.html', villas=get_rows(sheet))
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 10000))
+    port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
-            
+        
