@@ -16,8 +16,9 @@
     .section-label { font-size: 0.7rem; font-weight: 800; color: #0d6efd; text-transform: uppercase; letter-spacing: 1px; margin-top: 15px; display: block; border-bottom: 1px solid #eee; padding-bottom: 5px; }
     .calendar-input { background-color: #fff9f9 !important; border: 1px solid #ffc1c1 !important; cursor: pointer; }
     
-    /* ✅ New Partner Row Style */
+    /* Partner Row Highlight */
     .partner-row { border-left: 4px solid var(--gold-vip); }
+    .text-truncate-custom { max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle; }
 </style>
 
 <nav class="admin-nav mb-4">
@@ -55,7 +56,7 @@
         </form>
     </div>
 
-    {# --- ✅ NEW: PARTNER REQUESTS SECTION --- #}
+    {# --- PARTNER REQUESTS SECTION (FIXED FOR NONE VALUES) --- #}
     <div class="table-container border-start border-warning border-5">
         <h5 class="fw-bold mb-4"><i class="bi bi-briefcase-fill text-warning me-2"></i>New Partner Requests (Vendors)</h5>
         <div class="table-responsive">
@@ -67,27 +68,38 @@
                         <th>Phone</th>
                         <th>Villa & Location</th>
                         <th>Exp. Rent</th>
+                        <th>Amenities</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for v in vendors %}
                     <tr class="partner-row">
-                        <td class="small text-muted">{{ v.get('Timestamp') or v.get('Date') }}</td>
-                        <td><span class="fw-bold">{{ v.get('owner_name') }}</span></td>
+                        <td class="small text-muted">{{ v.get('Timestamp') or v.get('Date') or 'N/A' }}</td>
+                        <td><span class="fw-bold">{{ v.get('owner_name') or v.get('Owner Name') or 'N/A' }}</span></td>
                         <td>
-                            <a href="https://wa.me/{{ v.get('phone')|replace(' ', '')|replace('+', '') }}" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-3">
-                                <i class="bi bi-whatsapp"></i> {{ v.get('phone') }}
+                            {% set v_phone = v.get('phone') or v.get('Phone') %}
+                            {% if v_phone %}
+                            <a href="https://wa.me/{{ v_phone|replace(' ', '')|replace('+', '') }}" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                                <i class="bi bi-whatsapp"></i> {{ v_phone }}
                             </a>
+                            {% else %}
+                            <span class="text-muted small">No Phone</span>
+                            {% endif %}
                         </td>
                         <td>
-                            <div class="small fw-bold">{{ v.get('villa_name') }}</div>
-                            <div class="small text-muted"><i class="bi bi-geo-alt"></i> {{ v.get('location') }}</div>
+                            <div class="small fw-bold">{{ v.get('villa_name') or v.get('Villa Name') or 'N/A' }}</div>
+                            <div class="small text-muted"><i class="bi bi-geo-alt"></i> {{ v.get('location') or v.get('Location') or 'N/A' }}</div>
                         </td>
-                        <td><span class="badge bg-light text-dark border">₹{{ v.get('expected_rent') }}</span></td>
+                        <td><span class="badge bg-light text-dark border">₹{{ v.get('expected_rent') or v.get('Expected Rent') or '0' }}</span></td>
+                        <td>
+                            <span class="small text-muted text-truncate-custom" title="{{ v.get('amenities') or v.get('Amenities') }}">
+                                {{ v.get('amenities') or v.get('Amenities') or '-' }}
+                            </span>
+                        </td>
                     </tr>
                     {% endfor %}
                     {% if not vendors %}
-                    <tr><td colspan="5" class="text-center py-3 text-muted small">No new partner requests found.</td></tr>
+                    <tr><td colspan="6" class="text-center py-3 text-muted small">No new partner requests found.</td></tr>
                     {% endif %}
                 </tbody>
             </table>
@@ -123,7 +135,6 @@
                                     <i class="bi bi-pencil-square me-1"></i> Edit Details
                                 </button>
                                 
-                                {# --- QUICK MANUAL STATUS UPDATE LOGIC --- #}
                                 <form action="/quick-status-update" method="POST" style="display:inline;">
                                     <input type="hidden" name="Villa_ID" value="{{ villa.get('Villa_ID') }}">
                                     <input type="hidden" name="current_status" value="{{ villa.get('Status') }}">
@@ -241,12 +252,17 @@
                 <tbody>
                     {% for row in enquiries %}
                     <tr>
-                        <td class="small text-muted">{{ row.get('Date', 'N/A') }}</td>
-                        <td><span class="fw-bold">{{ row.get('Name', 'Unknown') }}</span></td>
+                        <td class="small text-muted">{{ row.get('Date') or row.get('Timestamp') or 'N/A' }}</td>
+                        <td><span class="fw-bold">{{ row.get('Name') or row.get('name') or 'Unknown' }}</span></td>
                         <td>
-                            <a href="https://wa.me/{{ row.get('Phone', '')|replace(' ', '')|replace('+', '') }}" target="_blank" class="btn btn-sm btn-light rounded-pill px-3">
-                                <i class="bi bi-whatsapp text-success me-1"></i> {{ row.get('Phone', 'No Phone') }}
+                            {% set e_phone = row.get('Phone') or row.get('phone') %}
+                            {% if e_phone %}
+                            <a href="https://wa.me/{{ e_phone|replace(' ', '')|replace('+', '') }}" target="_blank" class="btn btn-sm btn-light rounded-pill px-3">
+                                <i class="bi bi-whatsapp text-success me-1"></i> {{ e_phone }}
                             </a>
+                            {% else %}
+                            <span class="text-muted small">No Phone</span>
+                            {% endif %}
                         </td>
                         <td class="small fw-bold text-primary">{{ row.get('villa_name') or row.get('Villa Name') or 'N/A' }}</td>
                     </tr>
