@@ -22,7 +22,7 @@ sheet = None
 places_sheet = None
 enquiry_sheet = None
 settings_sheet = None
-vendor_sheet = None # Naya Vendor Sheet variable
+vendor_sheet = None # ✅ Naya Vendor Sheet variable
 
 def init_sheets():
     global sheet, places_sheet, enquiry_sheet, settings_sheet, vendor_sheet
@@ -42,14 +42,13 @@ def init_sheets():
             places_sheet = all_ws.get("Places")
             enquiry_sheet = all_ws.get("Enquiries")
             settings_sheet = all_ws.get("Settings")
-            vendor_sheet = all_ws.get("Vendors") # Sheet mein 'Vendors' naam ka tab hona chahiye
+            vendor_sheet = all_ws.get("Vendors") # ✅ Sheet mein 'Vendors' naam ka tab hona chahiye
             print("✅ All Sheets Linked Successfully")
         except Exception as e:
             print(f"❌ Sheet Init Error: {e}")
 
 init_sheets()
 
-# [get_rows function remains exactly the same as your original code]
 def get_rows(target_sheet):
     if not target_sheet: return []
     try:
@@ -57,26 +56,39 @@ def get_rows(target_sheet):
         if not data or len(data) < 1: return []
         headers = [h.strip() for h in data[0]]
         final_list = []
+        
         today_day = datetime.now().weekday()
         today_str = datetime.now().strftime("%Y-%m-%d") 
+        
         for row in data[1:]:
             padded_row = row + [''] * (len(headers) - len(row))
             item = dict(zip(headers, padded_row))
+            
             sold_dates_str = str(item.get('Sold_Dates', '')).strip()
-            if today_str in sold_dates_str: item['Status'] = 'Sold Out'
+            if today_str in sold_dates_str:
+                item['Status'] = 'Sold Out'
+
             def clean_p(key):
                 val = str(item.get(key, '')).replace(',', '').replace('₹', '').strip()
-                if not val or val.lower() == 'nan' or val == '0': return 0
-                try: return int(float(val))
-                except: return 0
+                if not val or val.lower() == 'nan' or val == '0':
+                    return 0
+                try:
+                    return int(float(val))
+                except:
+                    return 0
+
             try:
                 item['Price'] = clean_p('Price')
                 item['Original_Price'] = clean_p('Original_Price')
                 item['Weekday_Price'] = clean_p('Weekday_Price')
                 item['Weekend_Price'] = clean_p('Weekend_Price')
+                
                 p_base = item['Price']
-                if today_day >= 4: item['current_display_price'] = item['Weekend_Price'] if item['Weekend_Price'] > 0 else p_base
-                else: item['current_display_price'] = item['Weekday_Price'] if item['Weekday_Price'] > 0 else p_base
+                if today_day >= 4: 
+                    item['current_display_price'] = item['Weekend_Price'] if item['Weekend_Price'] > 0 else p_base
+                else:
+                    item['current_display_price'] = item['Weekday_Price'] if item['Weekday_Price'] > 0 else p_base
+                
                 p = item['current_display_price']
                 op = item['Original_Price']
                 item['amount_saved'] = op - p if op > p else 0
@@ -84,6 +96,7 @@ def get_rows(target_sheet):
             except:
                 item['current_display_price'] = 0
                 item['amount_saved'] = 0
+
             raw_rules = str(item.get('Rules', '')).strip()
             if raw_rules:
                 rules_array = []
@@ -92,7 +105,9 @@ def get_rows(target_sheet):
                 elif '\n' in raw_rules: rules_array = raw_rules.split('\n')
                 else: rules_array = [raw_rules]
                 item['Rules_List'] = [r.strip() for r in rules_array if r.strip()]
-            else: item['Rules_List'] = ["ID Proof Required", "Standard Rules Apply"]
+            else:
+                item['Rules_List'] = ["ID Proof Required", "Standard Rules Apply"]
+
             item['Villa_ID'] = str(item.get('Villa_ID', '')).strip()
             item['Sold_Dates'] = sold_dates_str
             final_list.append(item)
@@ -101,7 +116,8 @@ def get_rows(target_sheet):
         print(f"Error in get_rows: {e}")
         return []
 
-# --- ORIGINAL ROUTES (Unchanged) ---
+# --- ROUTES ---
+
 @app.route('/')
 def index():
     villas = get_rows(sheet)
@@ -114,6 +130,28 @@ def index():
                 if len(r) >= 2: settings[r[0].strip()] = r[1].strip()
         except: pass
     return render_template('index.html', villas=villas, tourist_places=places, settings=settings)
+
+# ✅ NEW: Vendor Onboarding Logic
+@app.route('/vendor-onboarding', methods=['GET', 'POST'])
+def vendor_onboarding():
+    if request.method == 'POST':
+        v_data = [
+            datetime.now().strftime("%d-%m-%Y %H:%M"),
+            request.form.get('owner_name'),
+            request.form.get('phone'),
+            request.form.get('villa_name'),
+            request.form.get('location'),
+            request.form.get('expected_rent'),
+            request.form.get('amenities')
+        ]
+        if vendor_sheet:
+            try: vendor_sheet.append_row(v_data)
+            except: pass
+        
+        v_alert = f"💼 *New Partner Request!*\n👤 *Owner:* {v_data[1]}\n📞 *Phone:* {v_data[2]}\n🏡 *Villa:* {v_data[3]}\n📍 *Location:* {v_data[4]}\n💰 *Rent:* {v_data[5]}"
+        requests.get(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", params={"chat_id": TELEGRAM_CHAT_ID, "text": v_alert, "parse_mode": "Markdown"})
+        return render_template('list_property_success.html', name=v_data[1])
+    return render_template('vendor_form.html')
 
 @app.route('/villa/<villa_id>')
 def villa_details(villa_id):
@@ -140,35 +178,6 @@ def enquiry(villa_id):
         return render_template('success.html', name=name, villa_name=v_name)
     return render_template('enquiry.html', villa=villa)
 
-# --- NEW BUSINESS VENDOR ROUTE (Sirf Python se route chalega) ---
-@app.route('/vendor-onboarding', methods=['GET', 'POST'])
-def vendor_onboarding():
-    if request.method == 'POST':
-        # Form Data Collect Karna
-        v_data = [
-            datetime.now().strftime("%d-%m-%Y %H:%M"),
-            request.form.get('owner_name'),
-            request.form.get('phone'),
-            request.form.get('villa_name'),
-            request.form.get('location'),
-            request.form.get('expected_rent'),
-            request.form.get('amenities')
-        ]
-        
-        # 1. Google Sheet mein save karna
-        if vendor_sheet:
-            try: vendor_sheet.append_row(v_data)
-            except: pass
-            
-        # 2. Admin ko Telegram Alert bhejna
-        v_alert = f"💼 *New Vendor Registration!*\n👤 *Owner:* {v_data[1]}\n📞 *Phone:* {v_data[2]}\n🏡 *Villa:* {v_data[3]}\n📍 *Location:* {v_data[4]}\n💰 *Expected Rent:* {v_data[5]}"
-        requests.get(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", params={"chat_id": TELEGRAM_CHAT_ID, "text": v_alert, "parse_mode": "Markdown"})
-        
-        return render_template('list_property_success.html', name=v_data[1])
-    
-    return render_template('vendor_form.html')
-
-# --- OTHER ROUTES ---
 @app.route('/admin-login', methods=['GET', 'POST'])
 def admin_login():
     error = None
@@ -178,7 +187,8 @@ def admin_login():
         if u == ADMIN_USER and p == ADMIN_PASS:
             session['logged_in'] = True
             return redirect(url_for('admin_dashboard'))
-        else: error = "Invalid Username"
+        else:
+            error = "Invalid Username"
     return render_template('admin_login.html', error=error)
 
 @app.route('/admin')
@@ -187,6 +197,10 @@ def admin_dashboard():
     villas = get_rows(sheet)
     all_enquiries = get_rows(enquiry_sheet)
     enquiries = all_enquiries[-10:] if all_enquiries else []
+    
+    # ✅ NEW: Vendors list in Dashboard
+    vendors_list = get_rows(vendor_sheet)[-10:] if vendor_sheet else []
+    
     settings = {}
     if settings_sheet:
         try:
@@ -194,7 +208,7 @@ def admin_dashboard():
             for r in s_data:
                 if len(r) >= 2: settings[r[0].strip()] = r[1].strip()
         except: pass
-    return render_template('admin_dashboard.html', villas=villas, enquiries=enquiries, settings=settings)
+    return render_template('admin_dashboard.html', villas=villas, enquiries=enquiries, vendors=vendors_list, settings=settings)
 
 @app.route('/admin-logout')
 def admin_logout():
@@ -295,4 +309,4 @@ def list_property(): return render_template('list_property.html')
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
-        
+                                    
