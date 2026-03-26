@@ -1,120 +1,114 @@
 {% extends 'base.html' %}
 {% block content %}
+
 <style>
     .vendor-card {
-        background: rgba(255, 255, 255, 0.95);
+        background: white;
         border-radius: 30px;
-        border: 1px solid #e0e0e0;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+        overflow: hidden;
+        border: 1px solid #eee;
     }
-    .form-control-lg {
-        border-radius: 15px !important;
-        font-size: 1rem;
-        border: 1px solid #ebedef;
-        background: #fcfdfe;
+    .vendor-header {
+        background: linear-gradient(135deg, #000 0%, #222 100%);
+        color: white;
+        padding: 40px 30px;
+        text-align: center;
     }
-    .form-control-lg:focus {
-        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
-        border-color: #0d6efd;
+    .form-label {
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #555;
+        margin-bottom: 8px;
     }
-    .input-group-text {
-        background: none;
+    .form-control-luxe {
+        border-radius: 15px;
+        padding: 12px 20px;
+        border: 2px solid #f0f0f0;
+        transition: all 0.3s;
+    }
+    .form-control-luxe:focus {
+        border-color: #00b4d8;
+        box-shadow: 0 5px 15px rgba(0, 180, 216, 0.1);
+        outline: none;
+    }
+    .btn-submit-luxe {
+        background: #00b4d8;
+        color: white;
         border: none;
-        color: #0d6efd;
+        padding: 15px;
+        border-radius: 15px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        transition: all 0.3s;
     }
-    .vendor-hero {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-radius: 20px;
-        padding: 40px;
-        margin-bottom: 30px;
+    .btn-submit-luxe:hover {
+        background: #0077b6;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 180, 216, 0.2);
     }
 </style>
 
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-lg-10">
-            
-            <!-- Hero Section for Vendors -->
-            <div class="vendor-hero text-center shadow-sm">
-                <h1 class="fw-bold display-5 mb-3">Partner with <span class="text-primary">MoreVistas</span></h1>
-                <p class="lead text-muted">Apne Villa ko hamare premium network ka hissa banayein aur bookings badhaiye.</p>
-            </div>
-
-            <div class="row g-4">
-                <!-- Left Side: Benefits -->
-                <div class="col-md-4">
-                    <div class="p-4 bg-white rounded-4 shadow-sm border-0 h-100">
-                        <h5 class="fw-bold mb-4">Why List With Us?</h5>
-                        <ul class="list-unstyled">
-                            <li class="mb-4 d-flex align-items-start">
-                                <i class="bi bi-graph-up-arrow text-success fs-4 me-3"></i>
-                                <div><small class="fw-bold d-block">Boost Revenue</small><span class="text-muted small">Get high-paying verified guests consistently.</span></div>
-                            </li>
-                            <li class="mb-4 d-flex align-items-start">
-                                <i class="bi bi-shield-check text-primary fs-4 me-3"></i>
-                                <div><small class="fw-bold d-block">Zero Hassle</small><span class="text-muted small">We handle the marketing and initial enquiries.</span></div>
-                            </li>
-                            <li class="mb-4 d-flex align-items-start">
-                                <i class="bi bi-headset text-danger fs-4 me-3"></i>
-                                <div><small class="fw-bold d-block">Dedicated Support</small><span class="text-muted small">Personal manager for your property updates.</span></div>
-                            </li>
-                        </ul>
-                    </div>
+        <div class="col-lg-7">
+            <div class="vendor-card">
+                <!-- Header -->
+                <div class="vendor-header">
+                    <h2 class="fw-bold mb-2">Partner With MoreVistas</h2>
+                    <p class="opacity-75 mb-0">Apne Villa ko hamare luxury network se jodein.</p>
                 </div>
 
-                <!-- Right Side: Form -->
-                <div class="col-md-8">
-                    <div class="vendor-card p-4 p-md-5">
-                        <form action="/vendor-onboarding" method="POST">
-                            <h4 class="fw-bold mb-4">Property Details</h4>
-                            
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-secondary">Owner/Manager Name</label>
-                                    <input type="text" name="owner_name" class="form-control form-control-lg" placeholder="John Doe" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-secondary">WhatsApp Number</label>
-                                    <input type="tel" name="phone" class="form-control form-control-lg" placeholder="98XXXXXXXX" pattern="[0-9]{10}" required>
-                                </div>
-                                <div class="col-md-12">
-                                    <label class="form-label small fw-bold text-secondary">Villa Name</label>
-                                    <input type="text" name="villa_name" class="form-control form-control-lg" placeholder="e.g. Moonlight Luxury Villa" required>
-                                </div>
-                                <div class="col-md-12">
-                                    <label class="form-label small fw-bold text-secondary">Property Location (Lonavala Area)</label>
-                                    <input type="text" name="location" class="form-control form-control-lg" placeholder="e.g. Gold Valley, Tungarli" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-secondary">Expected Daily Rent (Approx)</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text bg-light border-0">₹</span>
-                                        <input type="number" name="expected_rent" class="form-control form-control-lg" placeholder="15000" required>
-                                    </div>
-                                </div>
-                                <div class="col-md-12">
-                                    <label class="form-label small fw-bold text-secondary">Top Amenities</label>
-                                    <textarea name="amenities" class="form-control form-control-lg" rows="3" placeholder="Private Pool, 4 BHK, Chef available, Wi-Fi..."></textarea>
-                                </div>
-                            </div>
+                <!-- Form Body -->
+                <form action="/vendor-onboarding" method="POST" class="p-4 p-md-5">
+                    <div class="row g-4">
+                        <!-- Owner Info -->
+                        <div class="col-md-6">
+                            <label class="form-label">Full Name (Owner)</label>
+                            <input type="text" name="owner_name" class="form-control form-control-luxe" placeholder="Enter your name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">WhatsApp Number</label>
+                            <input type="tel" name="phone" class="form-control form-control-luxe" placeholder="+91 00000 00000" required>
+                        </div>
 
-                            <div class="mt-4 p-3 bg-light rounded-3 mb-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="terms" required>
-                                    <label class="form-check-label small text-muted" for="terms">
-                                        I agree to share my property details with MoreVistas and understand they will contact me for verification.
-                                    </label>
-                                </div>
-                            </div>
+                        <!-- Villa Info -->
+                        <div class="col-md-12">
+                            <label class="form-label">Villa / Property Name</label>
+                            <input type="text" name="villa_name" class="form-control form-control-luxe" placeholder="e.g. Royal Azure Villa" required>
+                        </div>
 
-                            <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow-sm py-3">
-                                REGISTER PROPERTY <i class="bi bi-arrow-right ms-2"></i>
+                        <div class="col-md-6">
+                            <label class="form-label">Location (Area)</label>
+                            <input type="text" name="location" class="form-control form-control-luxe" placeholder="e.g. Tungarli, Lonavala" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Expected Daily Rent (₹)</label>
+                            <input type="number" name="expected_rent" class="form-control form-control-luxe" placeholder="e.g. 15000" required>
+                        </div>
+
+                        <!-- Details -->
+                        <div class="col-md-12">
+                            <label class="form-label">Amenities & Special Features</label>
+                            <textarea name="amenities" class="form-control form-control-luxe" rows="4" placeholder="Private Pool, 4 BHK, Chef Available, AC, etc."></textarea>
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="col-md-12 mt-5">
+                            <button type="submit" class="btn btn-submit-luxe w-100">
+                                <i class="bi bi-rocket-takeoff me-2"></i> SEND REGISTRATION REQUEST
                             </button>
-                        </form>
+                            <p class="text-center text-muted small mt-3">
+                                <i class="bi bi-shield-lock me-1"></i> Your data is safe with MoreVistas Admin.
+                            </p>
+                        </div>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
+
 {% endblock %}
