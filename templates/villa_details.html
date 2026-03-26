@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 
-{# --- CSS SECTION (आपका ओरिजिनल स्टाइल) --- #}
+{# --- CSS SECTION --- #}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
     /* Premium Typography & Colors */
@@ -209,11 +209,10 @@
                 </div>
 
                 <div class="d-grid gap-3">
-                    {# --- UPDATED WHATSAPP LINK WITH PRICE INFO --- #}
-                    <a href="https://wa.me/918830024994?text=Hi,%20I'm%20interested%20in%20booking%20{{ villa.Villa_Name|urlencode }}.%20Price%20seen:%20₹{{ villa.current_display_price|int }}%20per%20night." class="btn btn-success rounded-pill py-3 fw-bold shadow-lg">
+                    {# --- UPDATED: Is button ko ab Enquiry Form se link kar diya hai --- #}
+                    <a href="/enquiry/{{ villa.Villa_ID }}" class="btn btn-success rounded-pill py-3 fw-bold shadow-lg">
                         <i class="bi bi-whatsapp me-2"></i>BOOK ON WHATSAPP
                     </a>
-                    {# --- UPDATED ENQUIRY FORM LINK --- #}
                     <a href="/enquiry/{{ villa.Villa_ID }}" class="btn btn-outline-primary rounded-pill py-3 fw-bold">
                         <i class="bi bi-pencil-square me-2"></i>FILL ENQUIRY FORM
                     </a>
@@ -234,8 +233,9 @@
         {% endif %}
     </div>
     <div style="display: flex; gap: 8px;">
+        {# --- UPDATED: Mobile buttons ko bhi Form se link kar diya hai --- #}
         <a href="/enquiry/{{ villa.Villa_ID }}" class="btn btn-outline-primary rounded-pill px-3 py-2 fw-bold"><i class="bi bi-pencil-square"></i></a>
-        <a href="https://wa.me/918830024994?text=I%20want%20to%20book%20{{ villa.Villa_Name|urlencode }}" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow"><i class="bi bi-whatsapp"></i> BOOK</a>
+        <a href="/enquiry/{{ villa.Villa_ID }}" class="btn btn-success rounded-pill px-4 py-2 fw-bold shadow"><i class="bi bi-whatsapp"></i> BOOK</a>
     </div>
 </div>
 
@@ -268,4 +268,3 @@
     });
 </script>
 {% endblock %}
-    
